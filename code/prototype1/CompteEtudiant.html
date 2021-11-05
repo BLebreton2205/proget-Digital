@@ -37,32 +37,35 @@
                 </article>
             </div>
             <!--        Titre          -->
-            <div clasw = "row">
+            <div class = "row">
                 <article>
-                    <h1 id="titre">Compte Étudiant</h1>
+                    <img src="img/ENTETE_IT.png" class=" img"/>
+                </article>
+                <article>
+                    <h1 class="text-center">Compte Étudiant</h1>
                 </article>
                 
             </div>
             <!--        Form          -->
-            <div class = "container ">
+            <h2 id="sous_titre">Infomations personnelles</h2>
+            <div class = "container">
                 <form>
                     <div class="form-group">
-                    <label for="pet-select" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
+                    <label for="genre-selector" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
                     <select name="pets" id="pet-select">
-                        <option value="parrot">Ne souhaite pas précisez</option>
-                        <option value="dog">Homme</option>
-                        <option value="cat">Femme</option>
-                        <option value="hamster">Autre</option>
-                        <option value="parrot">Ne souhaite pas précisez</option>
+                        <option value="non_precis">Ne souhaite pas précisez</option>
+                        <option value="man">Homme</option>
+                        <option value="woman">Femme</option>
+                        <option value="other">Autre</option>
                     </select>
                     </div><br/>
                     <div class="form-group">
-                      <label for="nom" id="medium">Nom : <FONT color=red>*</FONT></label>
-                      <input type="text" class="form-control" id="nom" placeholder="Nom de l'élève">
+                        <label for="nom" id="medium">Nom : <FONT color=red>*</FONT></label>
+                        <input type="text" class="form-control" id="nom" placeholder="Nom de l'élève">
                     </div><br/>
                     <div class="form-group">
-                      <label for="prenom" id="medium">Prénom : <FONT color=red>*</FONT></label>
-                      <input type="text" class="form-control" id="prenom" placeholder="Prénom de l'élève">
+                        <label for="prenom" id="medium">Prénom : <FONT color=red>*</FONT></label>
+                        <input type="text" class="form-control" id="prenom" placeholder="Prénom de l'élève">
                     </div><br/>
                     <div class="form-group">
                         <label for="email" id="medium">Email : <FONT color=red>*</FONT></label>
@@ -72,19 +75,21 @@
                         <label for="numero">Numéro de téléphone : <FONT color=red>*</FONT></label>
                         <input type="tel" class="form-control" id="numero" placeholder="Numéro" pattern="[0-9]{10}">
                     </div><br/>
-                    <div class="form-group">
-                      <label for="exampleInputFile">File input</label>
-                      <input type="file" id="exampleInputFile">
-                      <p class="help-block">Example block-level help text here.</p>
+                    <!--<div class="form-group">
+                        <label for="exampleInputFile">File input</label>
+                        <input type="file" id="exampleInputFile">
+                        <p class="help-block">Example block-level help text here.</p>
                     </div>
                     <div class="checkbox">
-                      <label>
+                        <label>
                         <input type="checkbox"> Check me out
-                      </label>
+                        </label>
+                    </div>-->
+                    <div class="col text-center">
+                        <button type="submit" class="btn btn-success">Modifier</button>
                     </div>
-                    <button type="button" class="btn btn-success">Modifier</button>
-                  </form>
-                </div>
+                </form>
+            </div>
         </div>
     </body>
 </html>
