@@ -3,7 +3,7 @@ let CLIENT_BEGIN = `
 <html>
     <head>
         <meta charset="utf8"/>
-        <title> Votre compte </title>
+        <title> Votre Compte </title>
         <link rel="stylesheet" href="css/bootstrap.min.css"></link>
         <link rel="stylesheet" href="css/style.css"></link>
         <script src="jquery-3.6.0.slim.min.js"></script>
