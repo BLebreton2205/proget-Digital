@@ -1,4 +1,3 @@
 $(()=>{//Page de connexion des utilisateurs
-    var id = $("a").data("id");
-    console.log(id); 
+  $( "#entete" ).append( $("<button> Click </button>"));
 });
