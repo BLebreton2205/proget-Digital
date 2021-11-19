@@ -44,6 +44,8 @@ let CLIENT_MEDIUM2 = `
             </div>
 `
 let CLIENT_END = `
+    </head>
+    <body>
     </body>
 </html>
 `;
@@ -71,9 +73,9 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
         res.write("\n <script src=/"+dir_script+"/"+name+"></script");
       }
     }
-    res.write(CLIENT_MEDIUM1);
+    /*res.write(CLIENT_MEDIUM1);
 
-    res.write(CLIENT_MEDIUM2);
+    res.write(CLIENT_MEDIUM2);*/
 
     res.write(CLIENT_END);
     res.end();
