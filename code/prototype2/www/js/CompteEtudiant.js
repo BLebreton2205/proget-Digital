@@ -45,41 +45,31 @@ $(()=>{
 
   let div_info_pro = $(`<div class="container"></div>`).append(`<h2 id="sous_titre">Infomations personnelles</h2>`).appendTo(div_parent);
 
-  let form_info = $(`<form></form>`).append(`
+  let form_info = $(`<form></form>`).appendTo(div_info_pro);
+
+  let form_info_genre = $(`
     <div class="form-group">
     <label for="genre-selector" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
+    </div><br/>
+    `).appendTo(form_info);
+
+    let selecteur = $(`
     <select name="genre" id="genre_select">
         <option value="non_precis">Ne souhaite pas précisez</option>
         <option value="man">Homme</option>
         <option value="woman">Femme</option>
         <option value="other">Autre</option>
     </select>
-    </div><br/>
-    <div class="form-group">
-        <label for="nom" id="medium">Nom : <FONT color=red>*</FONT></label>
-        <input type="text" class="form-control" id="nom" placeholder="Nom de l'élève" required>
-    </div><br/>
-    <div class="form-group">
-        <label for="prenom" id="medium">Prénom : <FONT color=red>*</FONT></label>
-        <input type="text" class="form-control" id="prenom" placeholder="Prénom de l'élève" required>
-    </div><br/>
-    <div class="form-group">
-        <label for="email" id="medium">Email : <FONT color=red>*</FONT></label>
-        <input type="email" class="form-control" id="email" placeholder="Email" required>
-    </div><br/>
-    <div class="form-group" id="medium">
-        <label for="numero">Numéro de téléphone : <FONT color=red>*</FONT></label>
-        <input type="tel" class="form-control" id="numero" placeholder="Numéro" pattern="[0-9]{10}" required>
-    </div><br/>
-    `).appendTo(div_info_pro);
+      `).appendTo(form_info_genre);
 
     let form_info_div = $(`<div class="col text-center">  </div>`).appendTo(div_info_pro);
     let btn_fom_info = $(`<button type="submit" class="btn btn-success" id="modif_profil">Modifier votre profil</button>`).appendTo(form_info_div);
 
     btn_fom_info.click(()=>{
-      let name = nom.val();
+      let choice = selecteur.selectedIndex;
+      let name = selecteur.options[choice].value;
 
-      console.log("name");
+      console.log(name);
     });
 
 
