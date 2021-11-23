@@ -91,29 +91,6 @@ io_server.on("connection" , socket_client => {
 app.all('/VotreCompte', (req, res) => {
   res.sendFile("./CompteEtudiant.html", {root: dir});
 
-  /*let json : any = {};
-  json.id = Result['Id_depassement'];
-  json.date = Result['Date_Dep'];
-  json.heure= Result['Heure_Dep'];
-  json.puissance = Result['P_reactive'];
-  json.messageType= 'PuissanceDepassement';
-  let  message :string = JSON.stringify(json);
-  client.send(message);*/
-
-  /*pool.getConnection((err, connection) => {
-    if(err) throw err
-    console.log(`Connecté à l'id ${connection.threadId}`)
-
-    connection.query('SELECT * from `etudiants`', (err, rows) => {
-        connection.release()    // return the connection to pool
-
-        if(!err){
-            console.log(rows)
-        } else {
-            console.log(err+"1")
-        }
-    })
-  })*/
 })
 
 //traitement spécifique de certain irl
