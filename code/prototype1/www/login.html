@@ -43,18 +43,18 @@
             <div class="card">
               <article class="card-body">
                 <h2 class="card-title mb-4 mt-1 text-center">Se connecter :</h2>
-                <form method="">
+                <form onsubmit="return false">
                   <div class="form-group">
     	              <label>Adresse mail :</label>
                     <input name="email" class="form-control" placeholder="Email" type="email" id="mail">
                   </div>
                   <br/>
                   <div class="form-group">
-    	              <label>Mot de passe :</label>
+    	              <label class="control-label">Mot de passe :</label>
                     <input name="mdp" class="form-control" placeholder="*************" type="password" id="mdp">
                   </div>
                   <br/>
-                  <div class="form-group">
+                  <div class="form-group" id="form_mdp">
                     <label for="type-selector" id="medium">Êtes-vous :</label><br/>
                     <select name="genre" id="type_connect">
                       <option value="etudiant">Étudiant</option>
@@ -64,7 +64,7 @@
                   </div>
                   <br/>
                   <div class="form-group col text-center">
-                    <button type="submit" class="btn btn-block btn-success" id="btn_connect">Se connecter </button>
+                    <button type="submit" class="btn btn-block btn-success" id="bouton">Se connecter </button>
                   </div>
                 </form>
               </article>
@@ -93,33 +93,6 @@
             </div>
           </aside>
         </div>
-
-
-      <!-- <div class="container">
-          <img src="img/user_logo.png" alt="logo_user_digistage" width="150" height="150" class="mx-auto d-block">
-          <form action="#">
-            <div class="mb-3 mt-3">
-              <label for="#">Identifiant</label>
-              <input type="login" class="form-control" id="login" placeholder="Entrer votre identifiant" name="login">
-            </div>
-            <div class="mb-3">
-              <label for="pwd">mot de passe:</label>
-              <input type="password" class="form-control" id="pwd" placeholder="Entrer votre mot de passe" name="pswd">
-            </div>
-            <div class="form-check mb-3">
-              <label class="form-check-label">
-                <input class="form-check-input" type="checkbox" name="remember"> Remember me</label>
-            </div>
-            <button type="submit" class="btn btn-secondary">Connexion</button>
-          </form>
-        </div>
-      </div>
-
-      <br><br><br><br><br>
-
-      <!-- <a href="interface_etudiant.html" class="btn btn-outline-secondary">vers interface de l'etudiant</a>
-      <a href="interface_entreprise.html" class="btn btn-outline-secondary">vers interface de l'entreprise</a>
-      <a href="interface_école.html" class="btn btn-outline-secondary">vers interface de l'école</a> -->
     </div>
   </body>
 </html>

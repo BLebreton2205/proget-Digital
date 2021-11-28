@@ -7,3 +7,7 @@ io_client.on("connect", ()=>{
 io_client.on("disconnect", ()=>{
   console.log("Perte de la Connexion avec le serveur !!");
 });
+
+Element.prototype.appendAfter = function (element) {
+  element.parentNode.insertBefore(this, element.nextSibling);
+},false;

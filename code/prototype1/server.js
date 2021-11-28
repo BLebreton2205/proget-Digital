@@ -1,4 +1,8 @@
-//un sereur complet en l'utilisant le module express
+//un serveur complet en l'utilisant le module express
+
+/*function aleString(length){ // code temporaire, à remplacer par le bon code
+  return(""+fake_aleString);
+};*/
 
 let express = require("express");
 let app = express(); //on crée une application expresse (moteur web serveur)
@@ -9,10 +13,10 @@ let serveur = http.Server(app); //on crée un serveur http géré apar l'applica
 let socket_io = require("socket.io");
 let io_server = socket_io(serveur);
 
-let bcrypt = require('bcrypt');
+/*let bcrypt = require('bcrypt');
 const saltRounds = 10;
 const myPlaintextPassword = 's0/\/\P4$$w0rD';
-const someOtherPlaintextPassword = 'not_bacon';
+const someOtherPlaintextPassword = 'not_bacon';*/
 
 let dir = './www';
 
@@ -25,14 +29,65 @@ const pool = mysql.createPool({
     database: 'projet_digital'
 });
 
+//let all_users = [];
+
+/*let tools = {
+  sendClientPage(res, dir_script, send_socket_io, client_code){
+  //dir script : dossier des script a transmettre
+  res.write(CLIENT_BEGIN);
+  //injection du code client
+  res.write("\n <script>"+client_code+"</script>");
+
+  let all_script_client =  fs.readdirSync("./www/" + dir_script); //console.log(scripts_file);
+
+  for (let name of all_script_client) {
+    if(name.endsWith('.js')){
+      res.write("\n <script src=/"+dir_script+"/"+name+"></script>");
+  }
+  }
+    res.write(CLIENT_END);
+    res.end();
+  },
+  addUser : (name) => {
+    let token = aleString(32)
+    waiting_user.push({
+      name: name,
+      token : token //genere une chaine aléatoire de 32 caractères
+    });
+    return(token);
+  }
+}*/
+
 io_server.on("connection" , socket_client => {
 
-  console.log("Un client se connecte");
+  console.log("Un client se connecte en websocket");
+
+  /*socket_client.on("my_token_is",(token)=>{
+      //on va recherche ce token dans le tableau des users en attentes
+      let find = null; //contiendra le descripteur trouve
+      for(let i=0; i<waiting_user.length; i++ ){
+        let desc = waiting_user[i];
+          if( desc.token == token){
+          find = desc;
+          waiting_user.splice(i,1); //on supprime la position i dans waiting liste
+          break; // on sort du for
+        }
+      }
+      if(find){ //on a bien trouver une corrspondance, on valide la connexion
+        connected_users[find.name]={
+          socket : socket_client
+        };
+        all_users.push(find.name);
+        io_server.emit("all_users",all_users); // on diffuse la modification vers tous les interface deja connecté
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    });*/
 
   socket_client.on("Connect", valeur_info => {
-
-    //const hash_mdp = bcrypt.hash(valeur_info.mdp,10);
-
+    console.log("tout va bien");
     var selectQuery = `SELECT * FROM etudiants WHERE mail = '${valeur_info.mail}'`;
 
     pool.getConnection((err, connection) => {
@@ -50,26 +105,26 @@ io_server.on("connection" , socket_client => {
           //if (bcrypt.compareSync(hash_mdp, Result['mdp'])){
           if (valeur_info.mdp == Result['mdp']){
             console.log("Mot de passe verifié");
-            switch(valeur_info.mail){
+            switch(valeur_info.type){
               case "Étudiant":
-              io_server.emit("good_connection", "http://localhost:8090/VotreCompte");
+                console.log("Send Page");
+              io_server.emit("good_connection", "/VotreCompte");
               break
             }
-
-            //res.redirect('/VotreCompte');
           }else{
             console.log("Mauvais mot de passe");
-            io_server.emit("wrong_mdp")
+            io_server.emit("wrong_mdp", valeur_info)
           }
         }else{
           console.log("Mauvaise addresse mail");
-          io_server.emit("wrong_mail")
+          io_server.emit("wrong_mail", valeur_info)
         };
       });
     })
   })
 
   socket_client.on("getInfo", num => {
+    console.log("tout va bien");
     var selectQuery = "SELECT * FROM `etudiants`";
     pool.getConnection((err, connection) => {
       if(err) throw err
@@ -141,14 +196,6 @@ app.get('/Log', (req, res) => {
   res.sendFile("./login.html", {root: dir});
 
 })
-//traitement spécifique de certain irl
-/*app.all("/VotreCompte", (req, res)=>{
-  res.write("CompteEtudiant.html");
-  res.end();
-})
-
-*/
-
 
 app.use(express.static(dir)); //on indique à l'application de diffuser le contenur du sdossier www
 
