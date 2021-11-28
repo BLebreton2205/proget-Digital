@@ -1,5 +1,7 @@
 $(()=> {
+
   let valeur_info = {
+    type: '',
     genre: '',
     nom: '',
     prenom: '',
@@ -12,13 +14,18 @@ $(()=> {
     faebook: '',
     github: '',
     gitlab: '',
-    sof: ''
+    sof: '',
+    mdp: '',
   }
 
-  io_client.emit("getInfo");
+  io_client.on("good_connection", info => {
+    valeur_info = info.info;
+    console.log(info);
+    io_client.emit("getInfo", valeur_info.mail);
+    setValeur();
+  });
 
   function setValeur() {
-    console.log("test");
     io_client.on("setInfo", msg =>{
       console.log(msg.numero);
       if(msg){
@@ -44,7 +51,7 @@ $(()=> {
     })
   }
 
-  setValeur();
+  console.log(valeur_info);
 
   let btn_prop = document.getElementById("prop");
 
