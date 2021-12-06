@@ -22,7 +22,7 @@ $(()=> {
  /*---- Partie "io" ----*/
   io_client.on("good_connection", url =>{
     console.log(url.path);
-    let token = tools.addUser(url.info.mail);
+    //let token = tools.addUser(url.info.mail);
     document.location = url.path;
   });
 

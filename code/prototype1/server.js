@@ -30,21 +30,6 @@ const pool = mysql.createPool({
     database: 'projet_digital'
 });
 
-let all_users = [];
-let waiting_user = [];
-let connected_users = {};
-
-let tools = {
-  addUser : (name) => {
-    let token = aleString(32)
-    waiting_user.push({
-      mail: mail,
-      token : token //genere une chaine aléatoire de 32 caractères
-    });
-    return(token);
-  }
-}*/
-
 io_server.on("connection" , socket_client => {
 
   console.log("Un client se connecte en websocket");
@@ -177,7 +162,7 @@ app.all('/VotreCompte', (req, res) => {
 
 })
 app.get('/Log', (req, res) => {
-  res.sendFile("./login.html", {root: dir});
+  res.sendFile("./public/login.html", {root: dir});
 
 })
 
