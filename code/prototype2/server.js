@@ -3,7 +3,7 @@ let CLIENT_BEGIN = `
 <html>
     <head>
         <meta charset="utf8"/>
-        <title> Votre Compte </title>
+        <title> Votre Comptes </title>
         <link rel="stylesheet" href="css/bootstrap.min.css"></link>
         <link rel="stylesheet" href="css/style.css"></link>
         <script src="jquery-3.6.0.slim.min.js"></script>
@@ -18,18 +18,31 @@ let CLIENT_END = `
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
+let http = require("http");
 const app = express();
+let serveur = http.Server(app);
 const port = process.env.PORT || 2205;
+
+//  MySQL
+const pool = mysql.createPool({
+    connectionLimit : 10,
+    host: 'localhost',
+    user: 'Admin',
+    password: 'admin',
+    database: 'projet_digital'
+});
 
 let tools = { //Ensemble des outils de traitement serveur disponible pour les scripts serveurs
   sendClientPage(res, dir_script, send_socket_io, client_code){
   //dir script : dossier des script a transmettre
     res.write(CLIENT_BEGIN);
     if(send_socket_io){
-      res.write("\n <script src='/socket.io/socket.io.js'></script>");
+      res.write("\n<script src='/socket.io/socket.io.js'></script>");
     }
     //injection du code client
-    res.write("\n <script>"+client_code+"</script>");
+    if(client_code){
+      res.write("\n <script>"+client_code+"</script>");
+    }
 
     let all_script_client =  fs.readdirSync("./www/" + dir_script); //console.log(scripts_file);
 
@@ -42,6 +55,17 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
     res.end();
   }
 }
+
+let socket_io = require("socket.io");
+let io_server = socket_io(serveur);
+
+io_server.on("connection", socket_client => {
+    console.log("Un client se connecte en websocket !");
+
+    socket_client.on("disconnect", () => {
+        console.log("Le client se déconnecte !");
+    });
+});
 
 app.use(bodyParser.urlencoded({ extend:false }));
 
@@ -66,7 +90,7 @@ app.recordScript = function (url, callback) {
         //extraction du body
       let arg_post;
       arg_post = req.body;
-      callback(arg_get, arg_post, res, tools);
+      callback(arg_get, arg_post, res, tools, pool);
         /*let body = '';
         req.on("data", chunk => body += chunk);
         req.on("end", () => {
@@ -78,40 +102,6 @@ app.recordScript = function (url, callback) {
         });*/
     });
 };
-
-/*app.post('/Connection', function(request, response) {
-  var mail = request.body.email;
-  var mdp = request.body.mdp;
-  var type = request.body.type;
-  console.log("mail=" + mail);
-  console.log("mdp=" + mdp);
-  console.log("type=" + type);
-});*/
-//  MySQL
-const pool = mysql.createPool({
-    connectionLimit : 10,
-    host: 'localhost',
-    user: 'admin',
-    password: 'admin',
-    database: 'projet_digital'
-});
-
-/*app.get('/CompteEtudiant.html', (req, res) => {
-    pool.getConnection((err, connection) => {
-        if(err) throw err
-        console.log(`Connecté à l'id ${connection.threadId}`)
-
-        connection.query('SELECT * from utilisateurs', (err, rows) => {
-            connection.release()    // return the connection to pool
-
-            if(!err){
-                //res.send(rows)
-            } else {
-                console.log(err+"1")
-            }
-        })
-    })
-})*/
 
 let fs = require("fs");
 const { argv } = require("process");
@@ -129,6 +119,6 @@ app.all(["/","index.htlml"], (req, res) => {
     tools.sendClientPage(res, "public");
 })
 
-
 app.use(express.static('./www'));
-app.listen(port, () => console.log(`Ecoute sur le port ${port}`));
+
+serveur.listen(port, () => console.log(`Ecoute sur le port ${port}`));

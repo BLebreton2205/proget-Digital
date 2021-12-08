@@ -46,7 +46,7 @@ $(() => {
                 <div class="form-group" id="form_mdp">
                   <label for="type-selector" id="medium">Êtes-vous :</label><br/>
                   <select name="type" id="type_connect">
-                    <option value="etudiant">Étudiant</option>
+                    <option value="etudiants">Étudiant</option>
                     <option value="entreprise">Entreprise</option>
                     <option value="etablissement">Établissement</option>
                   </select>
@@ -83,10 +83,5 @@ $(() => {
         </aside>
       </div>
   </div>`)
-
-  $('#bouton').click(()=>{
-    //let mail = $('#mail').val();
-    document.location = "/Connection";
-  })
 
 })
