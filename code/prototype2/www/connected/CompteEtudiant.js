@@ -1,6 +1,23 @@
 var io_client = io();
 
-//console.log(valeur_connect.mail);
+let valeur_info = {
+  type: '',
+  genre: '',
+  nom: '',
+  prenom: '',
+  mail: '',
+  numero: '',
+  cv: '',
+  siteweb: '',
+  linkedin: '',
+  twitter: '',
+  facebook: '',
+  github: '',
+  gitlab: '',
+  sof: ''
+}
+
+io_client.emit("InfoPlease", {type:type, mail:mail}); // on informe le serveur de son identité sur le canal websocket
 
 $(()=>{
 
@@ -80,7 +97,7 @@ $(()=>{
                   </div><br/>
                   <div class="form-group">
                       <label for="email" id="medium">Email : <FONT color=red>*</FONT></label>
-                      <input type="email" class="form-control" id="email" placeholder="Email" required>
+                      <input type="email" class="form-control" id="mail" placeholder="Email" required>
                   </div><br/>
                   <div class="form-group" id="medium">
                       <label for="numero">Numéro de téléphone : <FONT color=red>*</FONT></label>
@@ -115,7 +132,7 @@ $(()=>{
               <form>
                   <div class="form-group">
                       <label for="site" id="medium">Site Internet :</label>
-                      <input type="url" class="form-control" id="site" placeholder="Veuillez y mettre votre lien">
+                      <input type="url" class="form-control" id="siteweb" placeholder="Veuillez y mettre votre lien">
                   </div><br/>
                   <div class="form-group">
                       <label for="linkedin" id="medium">LinkedIn :</label>
@@ -127,7 +144,7 @@ $(()=>{
                   </div><br/>
                   <div class="form-group" id="medium">
                       <label for="fb">Facebook : </label>
-                      <input type="url" class="form-control" id="fb" placeholder="Veuillez y mettre votre lien" pattern="Veuillez y mettre votre lien">
+                      <input type="url" class="form-control" id="facebook" placeholder="Veuillez y mettre votre lien" pattern="Veuillez y mettre votre lien">
                   </div><br/>
                   <div class="form-group">
                       <label for="gitlab" id="medium">Github :</label>
@@ -169,12 +186,52 @@ $(()=>{
 
       </div>`);
 
+  setValeur();
+
   $( "#prop" ).click(function() {
     alert( "Cliquez" );
   });
-  console.log(valeur_connect);
-  console.log(valeur_connect.mail);
 
-  //$( "#email" ).val = valeur_connect.mail;
+  $( "#info_submit" ).click(function() {
+    sendValeur(valeur_info);
+  });
 
+  function setValeur() {
+    io_client.on("setInfo", msg =>{
+      if(msg){
+        for(arg in valeur_info) {
+          valeur_info[arg] = msg[arg];
+          switch (arg) {
+            case "genre":
+              document.getElementById("genre_select").value = valeur_info[arg];
+            break
+            case "cv":
+            case "type":
+              break
+            default:
+              document.getElementById(arg).value = valeur_info[arg];
+              break
+          }
+        };
+      }
+    })
+  }
+
+  function sendValeur(valeur_info) {
+    valeur_info.genre = document.getElementById("genre_select").options[document.getElementById('genre_select').selectedIndex].text;
+    valeur_info.nom = document.getElementById("nom").value;
+    valeur_info.prenom = document.getElementById("prenom").value;
+    valeur_info.mail = document.getElementById("mail").value;
+    valeur_info.numero = document.getElementById("numero").value
+    console.log(valeur_info);
+    alert(`
+      - Genre : ${valeur_info.genre};
+      - Nom : ${valeur_info.nom};
+      - Prénom : ${valeur_info.prenom};
+      - Mail : ${valeur_info.mail};
+      - Numéro : ${valeur_info.numero};
+      `);
+
+      io_client.emit("modifie", valeur_info);
+  }
 });
