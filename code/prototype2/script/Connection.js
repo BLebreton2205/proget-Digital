@@ -1,16 +1,16 @@
 module.exports = (arg_get,arg_post, res, tools, pool) => {
   console.log("## reception d'une requete script1 ....");
 
-  let valeur_connect = {
+  let userData = {
     type: '',
     mail: ''
   }
 
-  valeur_connect.mail = arg_post['email'];
+  userData.mail = arg_post['email'];
   let mdp = arg_post['mdp'];
-  valeur_connect.type = arg_post['type'];
+  userData.type = arg_post['type'];
 
-  var selectQuery = `SELECT * FROM ${valeur_connect.type} WHERE mail = '${valeur_connect.mail}'`;
+  var selectQuery = `SELECT * FROM ${userData.type} WHERE mail = '${userData.mail}'`;
 
   pool.getConnection((err, connection) => {
   if(err) throw err
@@ -23,10 +23,12 @@ module.exports = (arg_get,arg_post, res, tools, pool) => {
         console.log("Mail verifié !");
         if (mdp == Result['mdp']){
           console.log("Mot de passe verifié");
-          switch(valeur_connect.type){
+          switch(userData.type){
             case "etudiants":
               console.log("Send Page");
-              tools.sendClientPage(res, "connected",true, valeur_connect);
+              res.cookie("userData", userData, {maxAge: 900000});
+              let token = tools.addUser(arg_get['name']); // on notifie l'ajout de l'utilisateur au noyeau du serveur
+              tools.sendClientPage(res, "connected",true, "token = 'userData';");
             break
           }
         }else{

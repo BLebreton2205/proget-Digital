@@ -15,6 +15,11 @@ let CLIENT_END = `
 </html>
 `;
 
+let fake_aleString = 0;
+function aleString(length){ // code temporaire, à remplacer par le bon code
+  return(""+fake_aleString);
+};
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
@@ -24,6 +29,8 @@ const app = express();
 let serveur = http.Server(app);
 const port = process.env.PORT || 2205;
 
+app.use(cookieParser());
+
 //  MySQL
 const pool = mysql.createPool({
     connectionLimit : 10,
@@ -32,6 +39,8 @@ const pool = mysql.createPool({
     password: 'admin',
     database: 'projet_digital'
 });
+let waiting_user = [];
+let connected_users = {};
 
 let tools = { //Ensemble des outils de traitement serveur disponible pour les scripts serveurs
   sendClientPage(res, dir_script, send_socket_io, client_code){
@@ -42,10 +51,10 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
     }
     //injection du code client
     if(client_code){
-      //res.write("\n <script>"+client_code+"</script>");
-      for(arg in client_code){
+      res.write("\n <script>"+client_code+"</script>");
+      /*for(arg in client_code){
         res.write("\n <script>"+arg+"='"+client_code[arg]+"'</script>");
-      }
+      }*/
     }
 
     let all_script_client =  fs.readdirSync("./www/" + dir_script); //console.log(scripts_file);
@@ -57,6 +66,17 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
     }
     res.write(CLIENT_END);
     res.end();
+  },
+  addUser : (req, name) =>{ //un client aa valider son formulaire d'identification er demande l'activation de son IHM
+  console.log(waiting_user);
+  let info = {};
+  let token = aleString(32)
+  for (let cookie in req.cookies) if (cookie == name) info = req.cookies[cookie]
+    waiting_user.push({
+      name: name,
+      info : info
+    });
+    console.log(waiting_user);
   }
 }
 
@@ -65,37 +85,55 @@ let io_server = socket_io(serveur);
 
 io_server.on("connection", socket_client => {
     console.log("Un client se connecte en websocket !");
+    socket_client.on("InfoPlease", (token) => {
+      let find = null; //contiendra le descripteur trouve
+      let info = {};
+      for(let i=0; i<waiting_user.length; i++ ){
+        let desc = waiting_user[i];
+          if( desc.name == token){
+          find = desc;
+          info = desc.info;
+        }
+      }
+      if(find){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT * FROM ${info.type} WHERE mail = '${info.mail}'`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
 
-    socket_client.on("InfoPlease", valeur_connect => {
-      var selectQuery = `SELECT * FROM ${valeur_connect.type} WHERE mail = '${valeur_connect.mail}'`;
-      pool.getConnection((err, connection) => {
-        if(err) throw err
-        console.log(`Connecté à l'id ${connection.threadId}`)
-
-        connection.query(selectQuery, (err, rows) => {
-            var Result = rows[0];
-            connection.release()    // return the connection to pool
-            if(!err){
-              io_server.emit("setInfo",{
-                genre: Result['genre'],
-                nom: Result['nom'],
-                prenom: Result['prenom'],
-                mail: Result['mail'],
-                numero: Result['numero'],
-                cv: Result['cv'],
-                siteweb: Result['siteweb'],
-                linkedin: Result['linkedin'],
-                twitter: Result['twitter'],
-                facebook: Result['facebook'],
-                github: Result['github'],
-                gitlab: Result['gitlab'],
-                sof: Result['sof']
-              });
-            } else {
-                console.log(err+"1")
-            }
-        })
-      });
+          connection.query(selectQuery, (err, rows) => {
+          console.log("okey")
+              var Result = rows[0];
+              connection.release()    // return the connection to pool
+              if(!err){
+                io_server.emit("setInfo",{
+                  type: info.type,
+                  genre: Result['genre'],
+                  nom: Result['nom'],
+                  prenom: Result['prenom'],
+                  mail: Result['mail'],
+                  numero: Result['numero'],
+                  cv: Result['cv'],
+                  siteweb: Result['siteweb'],
+                  linkedin: Result['linkedin'],
+                  twitter: Result['twitter'],
+                  facebook: Result['facebook'],
+                  github: Result['github'],
+                  gitlab: Result['gitlab'],
+                  sof: Result['sof']
+                });
+                  console.log("Info envoyer");
+              } else {
+                  console.log(err+"1")
+              }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
     })
 
     socket_client.on("modifie", newVal => {
@@ -103,20 +141,21 @@ io_server.on("connection", socket_client => {
       var selectQuery = `UPDATE ${newVal.type} SET `;
       let i = 0;
       for(let value in newVal){
-        if(newVal[value] != ''){
-          selectQuery = selectQuery + critere[i] + "='" + newVal[value] + "', ";
+        for (let crit of critere) {
+          if (value == crit && newVal[value] != '') selectQuery = selectQuery + crit + "='" + newVal[value] + "', ";
         }
         i++;
       }
       selectQuery = selectQuery.slice(0, -1);
       selectQuery = selectQuery.slice(0, -1);
-      selectQuery = selectQuery + " WHERE 1";
+      selectQuery = selectQuery + ` WHERE mail = '${newVal.mail}'`;
       console.log(selectQuery);
       pool.getConnection((err, connection) => {
       if(err) throw err
       console.log(`Connecté à l'id ${connection.threadId}`)
 
       connection.query(selectQuery, (err, result) => {
+        console.log("Modifier");
         if(err){
             console.log(err+"1")
           };
@@ -130,12 +169,6 @@ io_server.on("connection", socket_client => {
 });
 
 app.use(bodyParser.urlencoded({ extend:false }));
-
-app.use(cookieParser());
-let user = {
-  type:"",
-  mail:""
-}
 
 app.use(bodyParser.json());
 
@@ -176,6 +209,59 @@ for (let name of scripts_file) {
 
 app.all(["/","index.htlml"], (req, res) => {
     tools.sendClientPage(res, "public");
+})
+
+app.post("/Connected", (req, res) => {
+  console.log("## reception d'une requete script1 ....");
+
+  let userData = {
+    type: '',
+    mail: ''
+  }
+
+  userData.mail = req.body['email'];
+  let mdp = req.body['mdp'];
+  userData.type = req.body['type'];
+
+  var selectQuery = `SELECT * FROM ${userData.type} WHERE mail = '${userData.mail}'`;
+
+  pool.getConnection((err, connection) => {
+  if(err) throw err
+  console.log(`Connecté à l'id ${connection.threadId}`)
+
+  connection.query(selectQuery, (err, rows) => {
+    var Result = rows[0];
+    connection.release()
+    if(Result){
+        console.log("Mail verifié !");
+        if (mdp == Result['mdp']){
+          console.log("Mot de passe verifié");
+          switch(userData.type){
+            case "etudiants":
+              console.log("Send Page");
+              res.cookie("user", userData, {maxAge: 900000});
+              tools.addUser(req, "user"); // on notifie l'ajout de l'utilisateur au noyeau du serveur
+              res.redirect('/Compte');
+            break
+          }
+        }else{
+          console.log("Mauvais mot de passe");
+          res.redirect("/");
+        }
+      }else{
+        console.log("Mauvaise addresse mail");
+        res.redirect("/");
+      };
+    });
+  })
+})
+
+app.get("/Compte", (req, res) => {
+  tools.sendClientPage(res, "connected", true, "token = 'user';");
+})
+
+app.post("/Compte", (req, res) => {
+  tools.sendClientPage(res, "connected", true, "token = 'user';");
 })
 
 app.use(express.static('./www'));

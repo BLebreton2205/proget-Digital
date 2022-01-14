@@ -17,10 +17,9 @@ let valeur_info = {
   sof: ''
 }
 
-io_client.emit("InfoPlease", {type:type, mail:mail}); // on informe le serveur de son identité sur le canal websocket
+io_client.emit("InfoPlease", token); // on informe le serveur de son identité sur le canal websocket
 
 $(()=>{
-
   let body = $('body').append(`
       <div class="container-fluid">
           <!--        Header      -->
@@ -77,7 +76,7 @@ $(()=>{
           <!--        Form        -->
           <div class="container">
               <h2 id="sous_titre">Infomations personnelles</h2>
-              <form id ="form_info">
+              <form id ="form_info" method="post" action="/Compte">
                   <div class="form-group">
                   <label for="genre-selector" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
                   <select name="genre" id="genre_select">
@@ -223,15 +222,6 @@ $(()=>{
     valeur_info.prenom = document.getElementById("prenom").value;
     valeur_info.mail = document.getElementById("mail").value;
     valeur_info.numero = document.getElementById("numero").value
-    console.log(valeur_info);
-    alert(`
-      - Genre : ${valeur_info.genre};
-      - Nom : ${valeur_info.nom};
-      - Prénom : ${valeur_info.prenom};
-      - Mail : ${valeur_info.mail};
-      - Numéro : ${valeur_info.numero};
-      `);
-
-      io_client.emit("modifie", valeur_info);
+    io_client.emit("modifie", valeur_info);
   }
 });
