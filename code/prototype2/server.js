@@ -163,6 +163,22 @@ io_server.on("connection", socket_client => {
       })
     })
 
+    socket_client.on("change_password", (new_mdp, info) => {
+      var selectQuery = `UPDATE ${info.type} SET mdp='${new_mdp}' WHERE mail = '${info.mail}'`;
+      console.log(selectQuery);
+      pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+
+      connection.query(selectQuery, (err, result) => {
+        console.log("Modifier");
+        if(err){
+            console.log(err+"1")
+          };
+        });
+      })
+    })
+
     socket_client.on("disconnect", () => {
         console.log("Le client se déconnecte !");
     });
@@ -207,11 +223,11 @@ for (let name of scripts_file) {
   }
 }
 
-app.all(["/","index.htlml"], (req, res) => {
+app.all(["/login"], (req, res) => {
     tools.sendClientPage(res, "public");
 })
 
-app.post("/Connected", (req, res) => {
+app.all("/Compte", (req, res) => {
   console.log("## reception d'une requete script1 ....");
 
   let userData = {
@@ -241,28 +257,28 @@ app.post("/Connected", (req, res) => {
               console.log("Send Page");
               res.cookie("user", userData, {maxAge: 900000});
               tools.addUser(req, "user"); // on notifie l'ajout de l'utilisateur au noyeau du serveur
-              res.redirect('/Compte');
+              tools.sendClientPage(res, "connected", true, "token = 'user';");
             break
           }
         }else{
           console.log("Mauvais mot de passe");
-          res.redirect("/");
+          res.redirect("/login");
         }
       }else{
         console.log("Mauvaise addresse mail");
-        res.redirect("/");
+        res.redirect("/login");
       };
     });
   })
 })
 
-app.get("/Compte", (req, res) => {
+/*app.get("/Compte", (req, res) => {
   tools.sendClientPage(res, "connected", true, "token = 'user';");
 })
 
 app.post("/Compte", (req, res) => {
   tools.sendClientPage(res, "connected", true, "token = 'user';");
-})
+})*/
 
 app.use(express.static('./www'));
 

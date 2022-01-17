@@ -168,17 +168,17 @@ $(()=>{
           <!--        MDP         -->
           <div class="container">
               <h2 id="sous_titre">Mot de passe :</h2>
-              <form>
+              <form method="post" action="/Compte">
                   <div class="form-group" id="medium">
-                      <label for="mdp">Nouveau mot de passe : </label>
-                      <input type="password" class="form-control" id="mdp">
+                      <label for="newMdp">Nouveau mot de passe : </label>
+                      <input type="password" class="form-control" id="newMdp">
                   </div><br/>
                   <div class="form-group" id="medium">
-                      <label for="newmdp">Confirmer le nouveau mot de passe : </label>
-                      <input type="password" class="form-control" id="newmdp">
+                      <label for="confNewMdp">Confirmer le nouveau mot de passe : </label>
+                      <input type="password" class="form-control" id="confNewMdp">
                   </div><br/>
                   <div class="col text-center">
-                      <button type="submit" class="btn btn-success">Enregistrer</button>
+                      <button id="change_password" class="btn btn-success">Enregistrer</button>
                   </div>
                 </form>
           </div>
@@ -192,7 +192,11 @@ $(()=>{
   });
 
   $( "#info_submit" ).click(function() {
-    sendValeur(valeur_info);
+    sendInfo(valeur_info);
+  });
+
+  $( "#change_password" ).click(function() {
+    change_password(valeur_info);
   });
 
   function setValeur() {
@@ -216,12 +220,19 @@ $(()=>{
     })
   }
 
-  function sendValeur(valeur_info) {
+  function sendInfo(valeur_info) {
     valeur_info.genre = document.getElementById("genre_select").options[document.getElementById('genre_select').selectedIndex].text;
     valeur_info.nom = document.getElementById("nom").value;
     valeur_info.prenom = document.getElementById("prenom").value;
     valeur_info.mail = document.getElementById("mail").value;
     valeur_info.numero = document.getElementById("numero").value
     io_client.emit("modifie", valeur_info);
+  }
+
+  function change_password(valeur_info) {
+    let new_mdp = document.getElementById("newMdp").value;
+    let conf_New_Mdp = document.getElementById("confNewMdp").value;
+    if(new_mdp == conf_New_Mdp) io_client.emit("change_password", new_mdp, valeur_info);
+    else alert("Les mots de passe ne sont pas les mêmes");
   }
 });
