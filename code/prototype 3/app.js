@@ -27,13 +27,13 @@ res.send('user data added to cookie');
 //Iterate users data from cookie
 app.get('/getuser', (req, res)=>{
 //shows all the cookies
-res.send(req.cookies.userData);
+res.send(req.cookies);
 });
 
 //Route for destroying cookie
 app.get('/logout', (req, res)=>{
 //it will clear the userData cookie
-res.clearCookie('userData');
+res.clearCookie('user');
 res.send('user logout successfully');
 });
 

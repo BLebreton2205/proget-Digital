@@ -32,7 +32,7 @@ $(() => {
           <div class="card">
             <article class="card-body">
               <h2 class="card-title mb-4 mt-1 text-center">Se connecter :</h2>
-              <form method='post' action='/Compte'>
+              <form method='post' action='/Connect'>
                 <div class="form-group">
                   <label>Adresse mail :</label>
                   <input name="email" class="form-control" placeholder="Email" type="email" id="mail">

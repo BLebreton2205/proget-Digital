@@ -227,7 +227,7 @@ app.all(["/login"], (req, res) => {
     tools.sendClientPage(res, "public");
 })
 
-app.all("/Compte", (req, res) => {
+app.all("/Connect", (req, res) => {
   console.log("## reception d'une requete script1 ....");
 
   let userData = {
@@ -257,7 +257,7 @@ app.all("/Compte", (req, res) => {
               console.log("Send Page");
               res.cookie("user", userData, {maxAge: 900000});
               tools.addUser(req, "user"); // on notifie l'ajout de l'utilisateur au noyeau du serveur
-              tools.sendClientPage(res, "connected", true, "token = 'user';");
+              res.redirect("/Compte");
             break
           }
         }else{
@@ -272,13 +272,10 @@ app.all("/Compte", (req, res) => {
   })
 })
 
-/*app.get("/Compte", (req, res) => {
-  tools.sendClientPage(res, "connected", true, "token = 'user';");
+app.all("/Compte", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type != "" && req.cookies.user.mail != "") tools.sendClientPage(res, "connected", true, "token = 'user';");
+  else res.redirect("/login");
 })
-
-app.post("/Compte", (req, res) => {
-  tools.sendClientPage(res, "connected", true, "token = 'user';");
-})*/
 
 app.use(express.static('./www'));
 
