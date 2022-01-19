@@ -3,7 +3,6 @@ let CLIENT_BEGIN = `
 <html>
     <head>
         <meta charset="utf8"/>
-        <title> Votre Comptes </title>
         <link rel="stylesheet" href="css/bootstrap.min.css"></link>
         <link rel="stylesheet" href="css/style.css"></link>
         <script src="jquery-3.6.0.slim.min.js"></script>
@@ -16,9 +15,6 @@ let CLIENT_END = `
 `;
 
 let fake_aleString = 0;
-function aleString(length){ // code temporaire, à remplacer par le bon code
-  return(""+fake_aleString);
-};
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -43,9 +39,10 @@ let waiting_user = [];
 let connected_users = {};
 
 let tools = { //Ensemble des outils de traitement serveur disponible pour les scripts serveurs
-  sendClientPage(res, dir_script, send_socket_io, client_code){
+  sendClientPage(res, dir_script, titre, send_socket_io, client_code){
   //dir script : dossier des script a transmettre
     res.write(CLIENT_BEGIN);
+    res.write(`<title>${titre}</title>`)
     if(send_socket_io){
       res.write("\n<script src='/socket.io/socket.io.js'></script>");
     }
@@ -67,14 +64,11 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
     res.write(CLIENT_END);
     res.end();
   },
-  addUser : (req, name) =>{ //un client aa valider son formulaire d'identification er demande l'activation de son IHM
+  addUser : (name, data) =>{ //un client aa valider son formulaire d'identification er demande l'activation de son IHM
   console.log(waiting_user);
-  let info = {};
-  let token = aleString(32)
-  for (let cookie in req.cookies) if (cookie == name) info = req.cookies[cookie]
     waiting_user.push({
       name: name,
-      info : info
+      info : data
     });
     console.log(waiting_user);
   }
@@ -90,7 +84,7 @@ io_server.on("connection", socket_client => {
       let info = {};
       for(let i=0; i<waiting_user.length; i++ ){
         let desc = waiting_user[i];
-          if( desc.name == token){
+          if(desc.name == token){
           find = desc;
           info = desc.info;
         }
@@ -224,7 +218,8 @@ for (let name of scripts_file) {
 }
 
 app.all(["/login"], (req, res) => {
-    tools.sendClientPage(res, "public");
+  res.clearCookie('user');
+  tools.sendClientPage(res, "public", "Se connecter | DigiStage");
 })
 
 app.all("/Connect", (req, res) => {
@@ -256,8 +251,8 @@ app.all("/Connect", (req, res) => {
             case "etudiants":
               console.log("Send Page");
               res.cookie("user", userData, {maxAge: 900000});
-              tools.addUser(req, "user"); // on notifie l'ajout de l'utilisateur au noyeau du serveur
-              res.redirect("/Compte");
+              tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
+              res.redirect("/interface");
             break
           }
         }else{
@@ -272,8 +267,19 @@ app.all("/Connect", (req, res) => {
   })
 })
 
+app.all("/interface", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, "token = 'user';");
+  else res.redirect("/login");
+})
+
+app.all("/StageDispo", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, "token = 'user';");
+  else res.redirect("/login");
+})
+
 app.all("/Compte", (req, res) => {
-  if(req.cookies.user && req.cookies.user.type != "" && req.cookies.user.mail != "") tools.sendClientPage(res, "connected", true, "token = 'user';");
+  //console.log(req.cookies);
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, "token = 'user';");
   else res.redirect("/login");
 })
 

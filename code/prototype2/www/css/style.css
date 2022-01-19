@@ -5,9 +5,15 @@ h1 {
   font-weight: normal;
   line-height: 129px;
   letter-spacing: 0em;
-  display: flex;
-  text-align: center;
 
+    color: #000000;
+
+}
+
+.sticky {
+  position: sticky;
+  top: 0px; /* When the element reaches top: 10px, it becomes fixed. */
+  z-index: 100;
 }
 
 .btn-primary-outline {
@@ -25,11 +31,6 @@ h2 {
   font-weight: bold;
   font-size: 42px;
   line-height: 49px;
-  display: flex;
-  align-items: center;
-  text-align: center;
-
-  color: #000000;
 }
 
 .img {
