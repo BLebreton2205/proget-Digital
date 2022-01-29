@@ -33,10 +33,10 @@ const pool = mysql.createPool({
     host: 'localhost',
     user: 'Admin',
     password: 'admin',
-    database: 'projet_digital'
+    database: 'digistage'
 });
+
 let waiting_user = [];
-let connected_users = {};
 
 let tools = { //Ensemble des outils de traitement serveur disponible pour les scripts serveurs
   sendClientPage(res, dir_script, titre, send_socket_io, client_code){
@@ -47,11 +47,12 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
       res.write("\n<script src='/socket.io/socket.io.js'></script>");
     }
     //injection du code client
+
     if(client_code){
-      res.write("\n <script>"+client_code+"</script>");
-      /*for(arg in client_code){
-        res.write("\n <script>"+arg+"='"+client_code[arg]+"'</script>");
-      }*/
+      //res.write("\n <script>"+client_code+"</script>");
+      for(arg in client_code){
+        res.write("\n <script>"+client_code[arg]+"</script>");
+      }
     }
 
     let all_script_client =  fs.readdirSync("./www/" + dir_script); //console.log(scripts_file);
@@ -79,6 +80,68 @@ let io_server = socket_io(serveur);
 
 io_server.on("connection", socket_client => {
     console.log("Un client se connecte en websocket !");
+
+    socket_client.on("StagePlease", token => {
+      var selectQuery = 'SELECT `Id_stage`, `titre`, `nom`, `periode`, `motcle` FROM `stage`, `entreprise` WHERE stage.Id_entreprise=entreprise.Id_entreprise';
+      pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        connection.query(selectQuery, (err, rows) => {
+            connection.release();
+            let Stages = {};
+            let nb = 0;
+            for( let stage in rows ){
+              nb++
+              Stages["Stage"+nb] = {
+                'Id_stage' : rows[nb-1].Id_stage,
+                'titre': rows[nb-1].titre,
+                'entreprise': rows[nb-1].nom,
+                'periode': rows[nb-1].periode,
+                'motcle':rows[nb-1].motcle
+              };
+            }
+            if(!err){
+              io_server.emit("LesStages", Stages)
+            }
+        })
+      })
+    })
+
+    socket_client.on("InfoStagePlease", (stage) => {
+      console.log(stage);
+      if(stage){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+          console.log("okey")
+              var Result = {
+                'Id_stage' : rows[0].Id_stage,
+                'titre': rows[0].titre,
+                'entreprise': rows[0].nom,
+                'periode': rows[0].periode,
+                'motcle':rows[0].motcle
+              };
+
+              connection.release()    // return the connection to pool
+              if(!err){
+                console.log(Result)
+                io_server.emit("LeStage", Result)
+              } else {
+                  console.log(err+"1")
+              }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    })
+
     socket_client.on("InfoPlease", (token) => {
       let find = null; //contiendra le descripteur trouve
       let info = {};
@@ -250,7 +313,7 @@ app.all("/Connect", (req, res) => {
           switch(userData.type){
             case "etudiants":
               console.log("Send Page");
-              res.cookie("user", userData, {maxAge: 900000});
+              res.cookie("user", userData, {maxAge: 3600000});
               tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
             break
@@ -268,18 +331,27 @@ app.all("/Connect", (req, res) => {
 })
 
 app.all("/interface", (req, res) => {
-  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, "token = 'user';");
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, ["token = 'user';"]);
+  else res.redirect("/login");
+})
+
+app.all("/Stage", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "etudiants"){
+    var stage = req.body[stage];
+    console.log(req.body.stage)
+    tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = 'user';", "stage = "+req.body.stage]);
+  }
   else res.redirect("/login");
 })
 
 app.all("/StageDispo", (req, res) => {
-  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, "token = 'user';");
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
 app.all("/Compte", (req, res) => {
   //console.log(req.cookies);
-  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, "token = 'user';");
+  if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
