@@ -53,7 +53,7 @@ $(()=>{
   </div>
   <!--        Form        -->
   <div class="container">
-    <h2 id="sous_titre">Infomations personnelles</h2>
+    <h2 class="sous_titre">Infomations personnelles</h2>
     <form id ="form_info" method="post" action="/Compte">
       <div class="form-group">
       <label for="genre-selector" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
@@ -90,7 +90,7 @@ $(()=>{
 
   <!--        CV          -->
   <div class="container">
-    <h2 id="sous_titre">CV</h2>
+    <h2 class="sous_titre">CV</h2>
     <div class="row">
       <p id="medium">Pour postuler, veuillez importer votre CV</p>
     </div>
@@ -108,7 +108,7 @@ $(()=>{
 
   <!--        Lien Web    -->
   <div class="container">
-    <h2 id="sous_titre">Lien Web</h2>
+    <h2 class="sous_titre">Lien Web</h2>
     <form id ="form_lien" method="post" action="/Compte">
       <div class="form-group">
         <label for="site" id="medium">Site Internet :</label>
@@ -150,7 +150,7 @@ $(()=>{
 
   <!--        MDP         -->
   <div class="container">
-      <h2 id="sous_titre">Mot de passe :</h2>
+      <h2 class="sous_titre">Mot de passe :</h2>
       <form method="post" action="/Compte">
           <div class="form-group" id="medium">
               <label for="newMdp">Nouveau mot de passe : </label>

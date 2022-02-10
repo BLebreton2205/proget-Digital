@@ -1,9 +1,9 @@
 h1 {
   font-family: Roboto;
-  font-size: 110px;
+  font-size: 75px;
   font-style: normal;
   font-weight: normal;
-  line-height: 129px;
+  line-height: 100px;
   letter-spacing: 0em;
 
     color: #000000;
@@ -29,7 +29,6 @@ h2 {
   font-family: Roboto;
   font-style: normal;
   font-weight: bold;
-  font-size: 42px;
   line-height: 49px;
 }
 
@@ -52,9 +51,20 @@ h2 {
   transform: translate(-50%, -50%);
 }
 
-#sous_titre {
+.sous_titre {
+  color: black;
+  font-size: 42px;
   position: relative;
   left: 5%
+}
+
+.sous_titre_Stage{
+  font-size: 50px;
+}
+
+.verySmallText{
+  font-size: 8px;
+  color:B4B4B4;
 }
 
 #medium {

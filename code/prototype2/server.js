@@ -3,9 +3,10 @@ let CLIENT_BEGIN = `
 <html>
     <head>
         <meta charset="utf8"/>
-        <link rel="stylesheet" href="css/bootstrap.min.css"></link>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="css/style.css"></link>
         <script src="jquery-3.6.0.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
 `
 let CLIENT_END = `
     </head>
@@ -24,6 +25,16 @@ var cookieParser = require('cookie-parser');
 const app = express();
 let serveur = http.Server(app);
 const port = process.env.PORT || 2205;
+var nodemailer = require('nodemailer');
+var formidable = require('formidable');
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'baptiste.lebreton@esiroi.re',
+    pass: 'JeSu1s3mmerd!!'
+  }
+});
 
 app.use(cookieParser());
 
@@ -110,7 +121,7 @@ io_server.on("connection", socket_client => {
     socket_client.on("InfoStagePlease", (stage) => {
       console.log(stage);
       if(stage){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
+        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle, stage.description, info FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -123,7 +134,9 @@ io_server.on("connection", socket_client => {
                 'titre': rows[0].titre,
                 'entreprise': rows[0].nom,
                 'periode': rows[0].periode,
-                'motcle':rows[0].motcle
+                'motcle':rows[0].motcle,
+                'description': rows[0].description,
+                'info': rows[0].info
               };
 
               connection.release()    // return the connection to pool
@@ -293,6 +306,8 @@ app.all("/Connect", (req, res) => {
     mail: ''
   }
 
+  console.log(req.body)
+
   userData.mail = req.body['email'];
   let mdp = req.body['mdp'];
   userData.type = req.body['type'];
@@ -338,10 +353,75 @@ app.all("/interface", (req, res) => {
 app.all("/Stage", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "etudiants"){
     var stage = req.body[stage];
-    console.log(req.body.stage)
-    tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = 'user';", "stage = "+req.body.stage]);
+    tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
   }
   else res.redirect("/login");
+})
+
+app.all("/Postule", (req, res, next) => {
+  console.log("Envoie d'une CoverLetter");
+
+  const form = new formidable.IncomingForm();
+  const uploadFolder = __dirname + "\\files";
+  console.log(uploadFolder);
+
+  // Basic Configuration
+  form.multiples = true;
+  form.uploadDir = uploadFolder;
+
+  form.parse(req, async (err, fields, files) => {
+  console.log(fields);
+  console.log(files);
+  if (err) {
+    console.log("Error parsing the files");
+    return res.status(400).json({
+      status: "Fail",
+      message: "There was an error parsing the files",
+      error: err,
+    });
+  }
+});
+
+  /*form.parse(req, function (err, fields, files) {
+    console.log(files);
+    var oldpath = files.formFile.filepath;
+    var newpath = '/files' + files.formFile.originalFilename;
+    fs.rename(oldpath, newpath, function (err) {
+      if (err) throw err;
+      console.log('File uploaded and moved!');
+    });
+  })*//*
+  let mailOptions = {
+    from: 'baptiste.lebreton@esiroi.re',
+    to: '',
+    subject: 'Postulation',
+    text: req.body["question-text"],
+    attachments : {
+      path: "/files/"+req.body.formFile
+    }
+  }
+  var selectQuery = `SELECT email FROM entreprise, stage WHERE stage.Id_stage = '${req.body['Id_stage']}' AND entreprise.Id_entreprise = stage.Id_entreprise`;
+
+  console.log(req.body)
+  pool.getConnection((err, connection) => {
+  if(err) throw err
+  console.log(`Connecté à l'id ${connection.threadId}`)
+
+  connection.query(selectQuery, (err, rows) => {
+    var Result = rows[0];
+    mailOptions.to = Result.email;
+    console.log(mailOptions)
+    connection.release()
+    transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+    });
+  })
+});*/
+
 })
 
 app.all("/StageDispo", (req, res) => {
