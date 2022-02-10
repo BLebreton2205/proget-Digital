@@ -359,9 +359,10 @@ app.all("/Stage", (req, res) => {
 })
 
 app.all("/Postule", (req, res, next) => {
-  console.log("Envoie d'une CoverLetter");
+  console.log("Envoie d'une Cover Letter");
 
   const form = new formidable.IncomingForm();
+  console.log(form);
   const uploadFolder = __dirname + "\\files";
   console.log(uploadFolder);
 
