@@ -95,12 +95,22 @@ $(()=>{
       <p id="medium">Pour postuler, veuillez importer votre CV</p>
     </div>
     <div class="row">
-    <form id ="form_cv" method="post" action="/Compte">
-      <div class="text-center">
-        <input id="cv" type="file" name="image" accept=".docx, .pdf"/>
-      </div>
-        <button id="Add_cv" type="submit" class="btn btn-success">Ajouter le CV</button>
-    </form>
+    <div class="text-center">
+      <form id ="form_cv" method="post" action="/Compte/new_cv" enctype="multipart/form-data">
+          <!--<input id="cv" type="file" name="image" accept=".docx, .pdf"/>-->
+          <input class="form-control" type="file" id="cv" name="resume" accept=", .pdf"/>
+          <p class="text-center verySmallText">Le fichier doit être un PDF</p>
+          <input name="token" type="hidden" value=${token} />
+      </form>
+      <button id="Add_cv" type="submit" class="btn btn-success" form="form_cv">Ajouter le CV</button>
+      <form action="/Compte">
+        <button id="Del_cv" type="submit" class="btn btn-danger">Supprimer le CV</button>
+      </form>
+      <form action="/Compte/dl_cv" method="post">
+        <input name="token" type="hidden" value=${token} />
+        <button id="Prev_cv" type="submit" class="btn btn-primary">Prévisualiser le CV</button>
+      </form>
+    </div>
     </div>
   </div>
 
@@ -173,8 +183,10 @@ $(()=>{
     changeInfo(valeur_info);
   });
 
-  $( "#Add_cv" ).click(function() {
-    alert(document.getElementById("cv").value);
+  $( "#Del_cv" ).click(function() {
+    var old_cv = valeur_info.cv;
+    valeur_info.cv = "";
+    io_client.emit("del_cv", old_cv, valeur_info);
   });
 
   $( "#change_lien" ).click(function() {
@@ -195,6 +207,7 @@ $(()=>{
               document.getElementById("genre_select").value = valeur_info[arg];
             break
             case "cv":
+              document.getElementById(arg).value = valeur_info[arg];
             case "type":
               break
             default:

@@ -56,17 +56,17 @@ function leStage(body) {
           </div> <!-- Modal-header -->
           <div class="modal-body"> <!-- Modal-body -->
 
-            <form method='post' action='/Postule' id='postuleForm'>
+            <form method='POST' action='/Postule' id='postuleForm' name="postuleForm" enctype="multipart/form-data">
               <div class="mb-3">
                 <label> Des questions ?</label>
-                <!--<textarea class="form-control" name="question-text"></textarea>-->
+                <textarea class="form-control" name="question-text"></textarea>
               </div>
               <br/><hr/><br/>
               <div class="mb-3">
                 <label>Proposez une lettre de motivation ?</label>
-                <input class="form-control" type="file" name="formFile" accept=".docx, .pdf"/>
+                <input class="form-control" type="file" name="CoverLetter" accept=".pdf"/>
                 <p class="text-center verySmallText">Le fichier doit être un PDF</p>
-                <!--<input name="Id_stage" type="hidden" value=${Id_stage} />-->
+                <input name="Id_stage" type="hidden" value=${Id_stage} />
               </div>
             </form>
 

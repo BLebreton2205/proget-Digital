@@ -39,8 +39,6 @@ function ajouterLesStages(body) {
 
     cardGroup = cardGroup+"</div></div>";
 
-    console.log(cardGroup);
-
     body.append(cardGroup);
   })
 }

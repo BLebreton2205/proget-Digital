@@ -17,17 +17,48 @@ let CLIENT_END = `
 
 let fake_aleString = 0;
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const mysql = require('mysql');
-let http = require("http");
-var cookieParser = require('cookie-parser');
-const app = express();
-let serveur = http.Server(app);
-const port = process.env.PORT || 2205;
-var nodemailer = require('nodemailer');
-var formidable = require('formidable');
+/*  Importation des différents packages NodeJS  */
 
+const express = require('express');
+const mysql = require('mysql');
+const http = require("http");
+const cookieParser = require('cookie-parser');
+const app = express();
+const serveur = http.Server(app);
+const port = process.env.PORT || 2205; //Définition du port du serveur
+const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+const bodyParser = require('body-parser');
+let fs = require("fs");
+const { argv } = require("process");
+app.use(bodyParser.urlencoded({ extend:false }));
+app.use(bodyParser.json());
+
+
+/*Création du stockages des fichiers temporaire */
+const tempStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/temp/")
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  },
+})
+const tempUpload = multer({ storage: tempStorage })
+
+/*  Création du stockages des fichiers permanant  */
+const PermStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/perm/")
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname)
+  },
+})
+const permUpload = multer({ storage: PermStorage })
+
+/*  Création du transporteur de mail  */
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -38,7 +69,7 @@ var transporter = nodemailer.createTransport({
 
 app.use(cookieParser());
 
-//  MySQL
+/*  Configuration de MySQL  */
 const pool = mysql.createPool({
     connectionLimit : 10,
     host: 'localhost',
@@ -47,9 +78,11 @@ const pool = mysql.createPool({
     database: 'digistage'
 });
 
-let waiting_user = [];
+let waiting_user = []; //Listes des utilisateurs
 
-let tools = { //Ensemble des outils de traitement serveur disponible pour les scripts serveurs
+/*  Ensemble des outils de traitements du serveur */
+let tools = {
+  /*  Fonction permettant d'envoyer la page au client */
   sendClientPage(res, dir_script, titre, send_socket_io, client_code){
   //dir script : dossier des script a transmettre
     res.write(CLIENT_BEGIN);
@@ -76,16 +109,16 @@ let tools = { //Ensemble des outils de traitement serveur disponible pour les sc
     res.write(CLIENT_END);
     res.end();
   },
-  addUser : (name, data) =>{ //un client aa valider son formulaire d'identification er demande l'activation de son IHM
-  console.log(waiting_user);
-    waiting_user.push({
-      name: name,
-      info : data
-    });
-    console.log(waiting_user);
-  }
+    /*  Fonction permettant d'ajouter un client */
+    addUser : (name, data) =>{
+      waiting_user.push({
+        name: name,
+        info : data
+      });
+    }
 }
 
+/*  Partie Socket.io : Permet les échanges d'informations client-serveur sur une même page  */
 let socket_io = require("socket.io");
 let io_server = socket_io(serveur);
 
@@ -128,7 +161,7 @@ io_server.on("connection", socket_client => {
           console.log(`Connecté à l'id ${connection.threadId}`)
 
           connection.query(selectQuery, (err, rows) => {
-          console.log("okey")
+          //console.log("okey")
               var Result = {
                 'Id_stage' : rows[0].Id_stage,
                 'titre': rows[0].titre,
@@ -141,7 +174,7 @@ io_server.on("connection", socket_client => {
 
               connection.release()    // return the connection to pool
               if(!err){
-                console.log(Result)
+              //  console.log(Result)
                 io_server.emit("LeStage", Result)
               } else {
                   console.log(err+"1")
@@ -156,6 +189,7 @@ io_server.on("connection", socket_client => {
     })
 
     socket_client.on("InfoPlease", (token) => {
+      console.log(waiting_user)
       let find = null; //contiendra le descripteur trouve
       let info = {};
       for(let i=0; i<waiting_user.length; i++ ){
@@ -167,13 +201,11 @@ io_server.on("connection", socket_client => {
       }
       if(find){ //on a bien trouver une corrspondance
         var selectQuery = `SELECT * FROM ${info.type} WHERE mail = '${info.mail}'`;
-        console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
           console.log(`Connecté à l'id ${connection.threadId}`)
 
           connection.query(selectQuery, (err, rows) => {
-          console.log("okey")
               var Result = rows[0];
               connection.release()    // return the connection to pool
               if(!err){
@@ -219,7 +251,7 @@ io_server.on("connection", socket_client => {
       selectQuery = selectQuery.slice(0, -1);
       selectQuery = selectQuery.slice(0, -1);
       selectQuery = selectQuery + ` WHERE mail = '${newVal.mail}'`;
-      console.log(selectQuery);
+      //console.log(selectQuery);
       pool.getConnection((err, connection) => {
       if(err) throw err
       console.log(`Connecté à l'id ${connection.threadId}`)
@@ -233,9 +265,25 @@ io_server.on("connection", socket_client => {
       })
     })
 
+    socket_client.on("del_cv", (old_cv, info) => {
+      console.log("Supression du cv")
+      var selectQuery = `UPDATE ${info.type} SET cv='${info.cv}' WHERE mail = '${info.mail}'`;
+      pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+
+      connection.query(selectQuery, (err, result) => {
+        console.log("Cv supprimer !");
+        if(err){
+            console.log(err+"1")
+          };
+        });
+      })
+    })
+
     socket_client.on("change_password", (new_mdp, info) => {
       var selectQuery = `UPDATE ${info.type} SET mdp='${new_mdp}' WHERE mail = '${info.mail}'`;
-      console.log(selectQuery);
+      //console.log(selectQuery);
       pool.getConnection((err, connection) => {
       if(err) throw err
       console.log(`Connecté à l'id ${connection.threadId}`)
@@ -254,10 +302,7 @@ io_server.on("connection", socket_client => {
     });
 });
 
-app.use(bodyParser.urlencoded({ extend:false }));
-
-app.use(bodyParser.json());
-
+/*
 app.recordScript = function (url, callback) {
     //avec : arg : l'objet argument fourni par le client dans le corps de sa requête
     //                  au format json
@@ -280,11 +325,10 @@ app.recordScript = function (url, callback) {
       callback(arg_get, arg_post, res, tools, pool);
     });
 };
-
-let fs = require("fs");
-const { argv } = require("process");
+*/
 let scripts_file = fs.readdirSync("./script");
 
+/*
 for (let name of scripts_file) {
   if(name.endsWith('.js')){
       let url = name.substr(0, name.indexOf(".")); //on isole le nom du fichier sans l'extension .js
@@ -292,7 +336,9 @@ for (let name of scripts_file) {
       app.recordScript(url, require("./script/" + name));
   }
 }
+*/
 
+/*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
 app.all(["/login"], (req, res) => {
   res.clearCookie('user');
   tools.sendClientPage(res, "public", "Se connecter | DigiStage");
@@ -305,8 +351,6 @@ app.all("/Connect", (req, res) => {
     type: '',
     mail: ''
   }
-
-  console.log(req.body)
 
   userData.mail = req.body['email'];
   let mdp = req.body['mdp'];
@@ -328,7 +372,7 @@ app.all("/Connect", (req, res) => {
           switch(userData.type){
             case "etudiants":
               console.log("Send Page");
-              res.cookie("user", userData, {maxAge: 3600000});
+              res.cookie("user", userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
             break
@@ -350,7 +394,7 @@ app.all("/interface", (req, res) => {
   else res.redirect("/login");
 })
 
-app.all("/Stage", (req, res) => {
+app.post("/Stage", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "etudiants"){
     var stage = req.body[stage];
     tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
@@ -358,70 +402,38 @@ app.all("/Stage", (req, res) => {
   else res.redirect("/login");
 })
 
-app.all("/Postule", (req, res, next) => {
-  console.log("Envoie d'une Cover Letter");
+app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
 
-  const form = new formidable.IncomingForm();
-  console.log(form);
-  const uploadFolder = __dirname + "\\files";
-  console.log(uploadFolder);
-
-  // Basic Configuration
-  form.multiples = true;
-  form.uploadDir = uploadFolder;
-
-  form.parse(req, async (err, fields, files) => {
-  console.log(fields);
-  console.log(files);
-  if (err) {
-    console.log("Error parsing the files");
-    return res.status(400).json({
-      status: "Fail",
-      message: "There was an error parsing the files",
-      error: err,
-    });
-  }
-});
-
-  /*form.parse(req, function (err, fields, files) {
-    console.log(files);
-    var oldpath = files.formFile.filepath;
-    var newpath = '/files' + files.formFile.originalFilename;
-    fs.rename(oldpath, newpath, function (err) {
-      if (err) throw err;
-      console.log('File uploaded and moved!');
-    });
-  })*//*
   let mailOptions = {
     from: 'baptiste.lebreton@esiroi.re',
     to: '',
     subject: 'Postulation',
     text: req.body["question-text"],
     attachments : {
-      path: "/files/"+req.body.formFile
+      path: req.file.path
     }
   }
   var selectQuery = `SELECT email FROM entreprise, stage WHERE stage.Id_stage = '${req.body['Id_stage']}' AND entreprise.Id_entreprise = stage.Id_entreprise`;
 
-  console.log(req.body)
   pool.getConnection((err, connection) => {
-  if(err) throw err
-  console.log(`Connecté à l'id ${connection.threadId}`)
+    if(err) throw err
+    console.log(`Connecté à l'id ${connection.threadId}`)
 
-  connection.query(selectQuery, (err, rows) => {
-    var Result = rows[0];
-    mailOptions.to = Result.email;
-    console.log(mailOptions)
-    connection.release()
-    transporter.sendMail(mailOptions, function(error, info){
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-    });
-  })
-});*/
+    connection.query(selectQuery, (err, rows) => {
+      var Result = rows[0];
+      mailOptions.to = Result.email;
+      console.log(mailOptions)
+      connection.release()
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+          res.redirect("/StageDispo");
+        }
+      });
+    })
+  });
 
 })
 
@@ -431,9 +443,67 @@ app.all("/StageDispo", (req, res) => {
 })
 
 app.all("/Compte", (req, res) => {
-  //console.log(req.cookies);
+  console.log(req.cookies);
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
+})
+
+app.all("/Compte/dl_cv", (req, res) => {
+  console.log("Okey tout marche")
+  let find = null; //contiendra le descripteur trouve
+  let info = {};
+  for(let i=0; i<waiting_user.length; i++ ){
+    let desc = waiting_user[i];
+      if(desc.name == req.body['token']){
+      find = desc;
+      info = desc.info;
+    }
+  }
+  console.log(req.body)
+  if(find){
+    var selectQuery = `SELECT cv FROM ${info.type} WHERE mail = '${info.mail}'`;
+    console.log(selectQuery)
+    pool.getConnection((err, connection) => {
+    if(err) throw err
+    console.log(`Connecté à l'id ${connection.threadId}`)
+
+    connection.query(selectQuery, (err, result) => {
+      console.log(result)
+      res.download(__dirname+"\\uploads\\perm\\"+result[0]['cv'])
+      if(err){
+          console.log(err+"1")
+        };
+      });
+    })
+  }
+})
+
+app.all("/Compte/new_cv", permUpload.single('resume'), function (req, res, next) {
+  console.log(req.file.filename)
+  let find = null; //contiendra le descripteur trouve
+  let info = {};
+  for(let i=0; i<waiting_user.length; i++ ){
+    let desc = waiting_user[i];
+      if(desc.name == req.body['token']){
+      find = desc;
+      info = desc.info;
+    }
+  }
+  if(find){
+    var selectQuery = `UPDATE ${info.type} SET cv='${req.file.filename}' WHERE mail = '${info.mail}'`;
+    pool.getConnection((err, connection) => {
+    if(err) throw err
+    console.log(`Connecté à l'id ${connection.threadId}`)
+
+    connection.query(selectQuery, (err, result) => {
+      console.log("Modifier");
+      if(err){
+          console.log(err+"1")
+        };
+      });
+    })
+  }
+  res.redirect("/Compte");
 })
 
 app.use(express.static('./www'));
