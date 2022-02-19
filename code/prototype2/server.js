@@ -5,7 +5,9 @@ let CLIENT_BEGIN = `
         <meta charset="utf8"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="css/style.css"></link>
+        <link href="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
         <script src="jquery-3.6.0.slim.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/js/froala_editor.pkgd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
 `
 let CLIENT_END = `
@@ -18,7 +20,7 @@ let CLIENT_END = `
 let fake_aleString = 0;
 
 /*  Importation des différents packages NodeJS  */
-
+/*region*/
 const express = require('express');
 const mysql = require('mysql');
 const http = require("http");
@@ -34,7 +36,7 @@ let fs = require("fs");
 const { argv } = require("process");
 app.use(bodyParser.urlencoded({ extend:false }));
 app.use(bodyParser.json());
-
+/*endregion*/
 
 /*Création du stockages des fichiers temporaire */
 const tempStorage = multer.diskStorage({
@@ -152,7 +154,7 @@ io_server.on("connection", socket_client => {
     })
 
     socket_client.on("InfoStagePlease", (stage) => {
-      console.log(stage);
+      //console.log(stage);
       if(stage){ //on a bien trouver une corrspondance
         var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle, stage.description, info FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
         console.log(selectQuery);
@@ -189,7 +191,7 @@ io_server.on("connection", socket_client => {
     })
 
     socket_client.on("InfoPlease", (token) => {
-      console.log(waiting_user)
+      //console.log(waiting_user)
       let find = null; //contiendra le descripteur trouve
       let info = {};
       for(let i=0; i<waiting_user.length; i++ ){
@@ -207,25 +209,20 @@ io_server.on("connection", socket_client => {
 
           connection.query(selectQuery, (err, rows) => {
               var Result = rows[0];
+              //console.log(Result)
               connection.release()    // return the connection to pool
               if(!err){
-                io_server.emit("setInfo",{
-                  type: info.type,
-                  genre: Result['genre'],
-                  nom: Result['nom'],
-                  prenom: Result['prenom'],
-                  mail: Result['mail'],
-                  numero: Result['numero'],
-                  cv: Result['cv'],
-                  siteweb: Result['siteweb'],
-                  linkedin: Result['linkedin'],
-                  twitter: Result['twitter'],
-                  facebook: Result['facebook'],
-                  github: Result['github'],
-                  gitlab: Result['gitlab'],
-                  sof: Result['sof']
-                });
-                  console.log("Info envoyer");
+                switch (info.type) {
+                  case "etudiants":
+                    io_server.emit("setInfo",{type: info.type, genre: Result['genre'], nom: Result['nom'], prenom: Result['prenom'], mail: Result['mail'], numero: Result['numero'], cv: Result['cv'], siteweb: Result['siteweb'], linkedin: Result['linkedin'], twitter: Result['twitter'], facebook: Result['facebook'], github: Result['github'], gitlab: Result['gitlab'], sof: Result['sof']});
+                    break;
+                  case "entreprise":
+                    io_server.emit("setInfo",{type: info.type, nom: Result['nom'], mail: Result['mail'], description: Result['description'], siteweb: Result['siteweb'], linkedin: Result['linkedin'], twitter: Result['twitter'], facebook: Result['facebook']});
+                    break;
+                  default:
+
+                }
+                console.log("Info envoyer");
               } else {
                   console.log(err+"1")
               }
@@ -239,19 +236,40 @@ io_server.on("connection", socket_client => {
     })
 
     socket_client.on("modifie", newVal => {
-      let critere = ["genre", "nom", "prenom", "mail", "numero", "siteweb", "linkedin", "twitter", "facebook", "github", "gitlab", "sof"];
-      var selectQuery = `UPDATE ${newVal.type} SET `;
+      let critere;
+      var selectQuery;
       let i = 0;
-      for(let value in newVal){
-        for (let crit of critere) {
-          if (value == crit && newVal[value] != '') selectQuery = selectQuery + crit + "='" + newVal[value] + "', ";
-        }
-        i++;
+      switch (newVal.type) {
+        case "etudiants":
+          critere = ["genre", "nom", "prenom", "mail", "numero", "siteweb", "linkedin", "twitter", "facebook", "github", "gitlab", "sof"];
+          selectQuery = `UPDATE ${newVal.type} SET `;
+          for(let value in newVal){
+            for (let crit of critere) {
+              if (value == crit && newVal[value] != '') selectQuery = selectQuery + crit + "=`" + newVal[value] + "`, ";
+            }
+            i++;
+          }
+          selectQuery = selectQuery.slice(0, -1);
+          selectQuery = selectQuery.slice(0, -1);
+          selectQuery = selectQuery + ` WHERE mail = '${newVal.mail}'`;
+          break;
+        case "entreprise":
+          critere = ["nom", "mail", "description", "siteweb", "linkedin", "twitter", "facebook"];
+          selectQuery = `UPDATE ${newVal.type} SET `;
+          for(let value in newVal){
+            for (let crit of critere) {
+              if (value == crit && newVal[value] != '') selectQuery = selectQuery + crit + "='" + newVal[value] + "', ";
+            }
+            i++;
+          }
+          selectQuery = selectQuery.slice(0, -1);
+          selectQuery = selectQuery.slice(0, -1);
+          selectQuery = selectQuery + ` WHERE mail = '${newVal.mail}'`;
+          break;
+        default:
+
       }
-      selectQuery = selectQuery.slice(0, -1);
-      selectQuery = selectQuery.slice(0, -1);
-      selectQuery = selectQuery + ` WHERE mail = '${newVal.mail}'`;
-      //console.log(selectQuery);
+      console.log(selectQuery)
       pool.getConnection((err, connection) => {
       if(err) throw err
       console.log(`Connecté à l'id ${connection.threadId}`)
@@ -326,7 +344,7 @@ app.recordScript = function (url, callback) {
     });
 };
 */
-let scripts_file = fs.readdirSync("./script");
+//let scripts_file = fs.readdirSync("./script");
 
 /*
 for (let name of scripts_file) {
@@ -339,6 +357,7 @@ for (let name of scripts_file) {
 */
 
 /*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
+/*region*/
 app.all(["/login"], (req, res) => {
   res.clearCookie('user');
   tools.sendClientPage(res, "public", "Se connecter | DigiStage");
@@ -357,6 +376,7 @@ app.all("/Connect", (req, res) => {
   userData.type = req.body['type'];
 
   var selectQuery = `SELECT * FROM ${userData.type} WHERE mail = '${userData.mail}'`;
+  console.log(selectQuery)
 
   pool.getConnection((err, connection) => {
   if(err) throw err
@@ -371,11 +391,17 @@ app.all("/Connect", (req, res) => {
           console.log("Mot de passe verifié");
           switch(userData.type){
             case "etudiants":
-              console.log("Send Page");
+              console.log("Send Page - Etudiant");
               res.cookie("user", userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
-            break
+              break
+            case "entreprise":
+              console.log("Send Page - Entreprise");
+              res.cookie("user", userData, {maxAge: 24 * 60 * 60 * 1000});
+              tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
+              res.redirect("/interface");
+              break
           }
         }else{
           console.log("Mauvais mot de passe");
@@ -391,6 +417,7 @@ app.all("/Connect", (req, res) => {
 
 app.all("/interface", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, ["token = 'user';"]);
+  else if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/Interface", "Interface | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
@@ -422,7 +449,7 @@ app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
     connection.query(selectQuery, (err, rows) => {
       var Result = rows[0];
       mailOptions.to = Result.email;
-      console.log(mailOptions)
+      //console.log(mailOptions)
       connection.release()
       transporter.sendMail(mailOptions, function(error, info){
         if (error) {
@@ -443,8 +470,9 @@ app.all("/StageDispo", (req, res) => {
 })
 
 app.all("/Compte", (req, res) => {
-  console.log(req.cookies);
+  //console.log(req.cookies);
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
+  else if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
@@ -478,7 +506,7 @@ app.all("/Compte/dl_cv", (req, res) => {
   }
 })
 
-app.all("/Compte/new_cv", permUpload.single('resume'), function (req, res, next) {
+app.all("/Compte/new_cv", permUpload.single('resume'), function (req, res) {
   console.log(req.file.filename)
   let find = null; //contiendra le descripteur trouve
   let info = {};
@@ -505,6 +533,7 @@ app.all("/Compte/new_cv", permUpload.single('resume'), function (req, res, next)
   }
   res.redirect("/Compte");
 })
+/*endregion*/
 
 app.use(express.static('./www'));
 

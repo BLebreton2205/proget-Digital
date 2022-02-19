@@ -42,9 +42,11 @@ function leStage(body) {
 
     <br/><hr/><br/>
 
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Postule">
-      Postuler
-    </button>
+    <div class="text-center">
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Postule">
+        Postuler
+      </button>
+    </div>
 
     <!-- Modal -->
     <div class="modal fade" id="Postule" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

@@ -126,7 +126,8 @@ $(()=>{
       </div><br/>
       <div class="form-group">
         <label for="site" id="medium">LinkedIn :</label>
-        <input type="url" class="form-control" id="linkedin" placeholder="Ajouter ou modifier votre lien"><!--<br/>
+        <input type="url" class="form-control" id="linkedin" placeholder="Ajouter ou modifier votre lien">
+        <!--<br/>
         <button id="suppr" class="btn btn-danger">Supprimer</button>
         <button id="test" class="btn btn-danger">Tester</button>-->
       </div><br/>
@@ -207,6 +208,8 @@ $(()=>{
               document.getElementById("genre_select").value = valeur_info[arg];
             break
             case "cv":
+              console.log(arg)
+              console.log(valeur_info[arg])
               document.getElementById(arg).value = valeur_info[arg];
             case "type":
               break
