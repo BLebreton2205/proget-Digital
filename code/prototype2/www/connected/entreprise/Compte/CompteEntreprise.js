@@ -23,7 +23,7 @@ $(()=>{
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
           </a>
-        <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
+        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
           <h2>Propositions</h2>
         </a>
         <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
@@ -162,7 +162,7 @@ $(()=>{
 
     $( "#modif_desp" ).click(function() {
       if(hide){
-        document.getElementById('edit').innerHTML = (`<textarea class="form-control" id="descriptionEdit" rows="5" form="form_info"></textarea>`);
+        document.getElementById('edit').innerHTML = (`<textarea class="form-control" id="descriptionEdit" rows="5" form="form_info">${valeur_info.description}</textarea>`);
         new FroalaEditor('#descriptionEdit');
         hide = !hide;
         //console.log(hide)

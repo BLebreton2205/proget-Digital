@@ -10,6 +10,10 @@ h1 {
 
 }
 
+.genre {
+  width: 50%;
+}
+
 .sticky {
   position: sticky;
   top: 0px; /* When the element reaches top: 10px, it becomes fixed. */
@@ -54,8 +58,6 @@ h2 {
 .sous_titre {
   color: black;
   font-size: 42px;
-  position: relative;
-  left: 5%
 }
 
 .sous_titre_Stage{

@@ -1,29 +1,38 @@
 var io_client = io();
 
-io_client.emit("StagePlease", token);
+io_client.emit("MesStages", token);
 
 let Stages = {};
 
-$(()=>{
+$(() => {
+
   let body = $('body').append(`
     <nav class="navbar navbar-dark bg-dark box-shadow navbar-fixed-top sticky">
       <div class="container d-flex justify-content-between">
-        <a href="interface" class="navbar-brand d-flex align-items-center">
+        <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
           </a>
-        <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Proposition</h2>
+        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
+          <h2>Propositions</h2>
+        </a>
+        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
+          <h2>Disponibilités</h2>
         </a>
         <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
       </div>
     </nav>
 
-    <h1 class="text-center">Proposition de stage</h1>
-    `);
-    ajouterLesStages(body)
-})
+    <h1 class="text-center">Vos propositions de stages</h1>
 
-function ajouterLesStages(body) {
+    <div class="text-center">
+      <a href="/Stage/edit">
+        <button class="btn btn-success">Nouveau stage</button>
+      </a>
+    </div><br/>
+    `);
+    affichageDeVosStages(body);
+})
+function affichageDeVosStages(body) {
   io_client.on("LesStages", stage => {
     Stages = stage;
 
@@ -42,7 +51,6 @@ function ajouterLesStages(body) {
     body.append(cardGroup);
   })
 }
-
 function newCardStage(stage) {
   let card_html = `
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">

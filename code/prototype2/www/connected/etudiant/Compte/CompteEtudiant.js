@@ -57,7 +57,7 @@ $(()=>{
     <form id ="form_info" method="post" action="/Compte">
       <div class="form-group">
       <label for="genre-selector" id="medium">Civilité : <FONT color=red>*</FONT></label><br/>
-      <select name="genre" id="genre_select">
+      <select class="form-select genre" name="genre" id="genre_select">
         <option value="non_precis">Ne souhaite pas précisez</option>
         <option value="Homme">Homme</option>
         <option value="Femme">Femme</option>

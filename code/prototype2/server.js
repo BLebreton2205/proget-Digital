@@ -4,9 +4,9 @@ let CLIENT_BEGIN = `
     <head>
         <meta charset="utf8"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="css/style.css"></link>
+        <link rel="stylesheet" href="../css/style.css"></link>
         <link href="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
-        <script src="jquery-3.6.0.slim.min.js"></script>
+        <script src="../jquery-3.6.0.slim.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/js/froala_editor.pkgd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
 `
@@ -153,10 +153,47 @@ io_server.on("connection", socket_client => {
       })
     })
 
+    socket_client.on("MesStages", token => {
+      let find = null; //contiendra le descripteur trouve
+      let info = {};
+      for(let i=0; i<waiting_user.length; i++ ){
+        let desc = waiting_user[i];
+          if(desc.name == token){
+          find = desc;
+          info = desc.info;
+        }
+      }
+      if(find){
+        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle FROM entreprise, stage WHERE mail='${info.mail}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+          connection.query(selectQuery, (err, rows) => {
+              connection.release();
+              let Stages = {};
+              let nb = 0;
+              for( let stage in rows ){
+                nb++
+                Stages["Stage"+nb] = {
+                  'Id_stage' : rows[nb-1].Id_stage,
+                  'titre': rows[nb-1].titre,
+                  'entreprise': rows[nb-1].nom,
+                  'periode': rows[nb-1].periode,
+                  'motcle':rows[nb-1].motcle
+                };
+              }
+              if(!err){
+                io_server.emit("LesStages", Stages)
+              }
+          })
+        })
+      }
+    })
+
     socket_client.on("InfoStagePlease", (stage) => {
       //console.log(stage);
       if(stage){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle, stage.description, info FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
+        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle, stage.description, infos FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -171,7 +208,7 @@ io_server.on("connection", socket_client => {
                 'periode': rows[0].periode,
                 'motcle':rows[0].motcle,
                 'description': rows[0].description,
-                'info': rows[0].info
+                'infos': rows[0].infos
               };
 
               connection.release()    // return the connection to pool
@@ -320,42 +357,6 @@ io_server.on("connection", socket_client => {
     });
 });
 
-/*
-app.recordScript = function (url, callback) {
-    //avec : arg : l'objet argument fourni par le client dans le corps de sa requête
-    //                  au format json
-
-    if (url.charAt(0) != '/') url = '/' + url; //auto injection du slash en début d'url
-    //ou:  if( !url.startsWith('/') ) ...
-    this.all(url,(req, res) =>{
-    let url_brute = req.url;
-    let uri = url_brute.substr( url_brute.indexOf('?') +1);
-    let tab_param = uri.split('&');
-    let arg_get = {};
-    for(let couple of tab_param){
-      let tab = couple.split("=");
-      arg_get[tab[0]] = encodeURIComponent(tab[1]);
-    }
-    //NB: ici this est l'application express (app en fait)
-        //extraction du body
-      let arg_post;
-      arg_post = req.body;
-      callback(arg_get, arg_post, res, tools, pool);
-    });
-};
-*/
-//let scripts_file = fs.readdirSync("./script");
-
-/*
-for (let name of scripts_file) {
-  if(name.endsWith('.js')){
-      let url = name.substr(0, name.indexOf(".")); //on isole le nom du fichier sans l'extension .js
-      console.log("... enregistrement du script : url = " + url + " , fichier  = " + "./script/" + name);
-      app.recordScript(url, require("./script/" + name));
-  }
-}
-*/
-
 /*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
 /*region*/
 app.all(["/login"], (req, res) => {
@@ -426,6 +427,32 @@ app.post("/Stage", (req, res) => {
     var stage = req.body[stage];
     tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
   }
+  else if(req.cookies.user && req.cookies.user.type == "entreprise"){
+      var stage = req.body[stage];
+      tools.sendClientPage(res, "connected/entreprise/Stage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
+    }
+  else res.redirect("/login");
+})
+
+app.all("/Stage/edit", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise"){
+      if(req.body.id) tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.id]);
+      else{
+        console.log("Nouveau");
+        tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user'; Id_stage = false" ]);
+      }
+    }
+  else res.redirect("/login");
+})
+
+app.post("/Stage/save", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise"){
+      if(req.body.id) tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.id]);
+      else{
+        console.log("Nouveau");
+        tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user'; Id_stage = false" ]);
+      }
+    }
   else res.redirect("/login");
 })
 
@@ -466,6 +493,11 @@ app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
 
 app.all("/StageDispo", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = 'user';"]);
+  else res.redirect("/login");
+})
+
+app.all("/VosStages", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/VosStages", "Vos stages | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
