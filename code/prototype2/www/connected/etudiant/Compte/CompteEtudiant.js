@@ -94,23 +94,28 @@ $(()=>{
     <div class="row">
       <p id="medium">Pour postuler, veuillez importer votre CV</p>
     </div>
-    <div class="row">
-    <div class="text-center">
-      <form id ="form_cv" method="post" action="/Compte/new_cv" enctype="multipart/form-data">
-          <!--<input id="cv" type="file" name="image" accept=".docx, .pdf"/>-->
-          <input class="form-control" type="file" id="cv" name="resume" accept=", .pdf"/>
-          <p class="text-center verySmallText">Le fichier doit être un PDF</p>
-          <input name="token" type="hidden" value=${token} />
-      </form>
-      <button id="Add_cv" type="submit" class="btn btn-success" form="form_cv">Ajouter le CV</button>
-      <form action="/Compte">
-        <button id="Del_cv" type="submit" class="btn btn-danger">Supprimer le CV</button>
-      </form>
-      <form action="/Compte/dl_cv" method="post">
-        <input name="token" type="hidden" value=${token} />
-        <button id="Prev_cv" type="submit" class="btn btn-primary">Prévisualiser le CV</button>
-      </form>
-    </div>
+      <div class="text-center">
+        <form id ="form_cv" method="post" action="/Compte/new_cv" enctype="multipart/form-data">
+            <input class="form-control" type="file" name="resume" accept=", .pdf"/>
+            <p class="text-center verySmallText">Le fichier doit être un PDF</p>
+            <input name="token" type="hidden" value=${token} />
+        </form>
+      <div class="row">
+        <div class="col">
+          <button id="Add_cv" type="submit" class="btn btn-success" form="form_cv">Ajouter le CV</button>
+        </div>
+        <div class="col">
+          <form action="/Compte">
+            <button id="Del_cv" type="submit" class="btn btn-danger">Supprimer le CV</button>
+          </form>
+        </div>
+        <div class="col">
+          <form action="/Compte/dl_cv" method="post">
+            <input name="cvEtudiant" id="cv" type="hidden" />
+            <button type="submit" class="btn btn-primary">Prévisualiser le CV</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -122,34 +127,45 @@ $(()=>{
     <form id ="form_lien" method="post" action="/Compte">
       <div class="form-group">
         <label for="site" id="medium">Site Internet :</label>
-        <input type="url" class="form-control" id="siteweb" placeholder="Ajouter ou modifier votre lien">
+        <div class="input-group">
+          <input type="url" class="form-control" id="siteweb" placeholder="Ajouter ou modifier votre lien">
+          <button class="btn btn-outline-secondary"id="del_web" type="button">Supprimer</button>
+        </div>
       </div><br/>
       <div class="form-group">
         <label for="site" id="medium">LinkedIn :</label>
-        <input type="url" class="form-control" id="linkedin" placeholder="Ajouter ou modifier votre lien">
-        <!--<br/>
-        <button id="suppr" class="btn btn-danger">Supprimer</button>
-        <button id="test" class="btn btn-danger">Tester</button>-->
+        <div class="input-group">
+          <input type="url" class="form-control" id="linkedin" placeholder="Ajouter ou modifier votre lien">
+          <button class="btn btn-outline-secondary" id="del_lkd" type="button">Supprimer</button>
+        </div>
       </div><br/>
       <div class="form-group">
         <label for="twitter" id="medium">Twitter :</label>
-        <input type="url" class="form-control" id="twitter" placeholder="Ajouter ou modifier votre lien">
+        <div class="input-group">
+          <input type="url" class="form-control" id="twitter" placeholder="Ajouter ou modifier votre lien">
+          <button class="btn btn-outline-secondary" id="del_tw" type="button">Supprimer</button>
+        </div>
       </div><br/>
-      <div class="form-group" id="medium">
+      <div class="form-group">
         <label for="fb">Facebook : </label>
-        <input type="url" class="form-control" id="facebook" placeholder="Ajouter ou modifier">
+        <div class="input-group">
+          <input type="url" class="form-control" id="facebook" placeholder="Ajouter ou modifier">
+          <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
+        </div>
       </div><br/>
       <div class="form-group">
         <label for="gitlab" id="medium">Github :</label>
-        <input type="url" class="form-control" id="gitlab" placeholder="Ajouter ou modifier">
+        <div class="input-group">
+          <input type="url" class="form-control" id="gitlab" placeholder="Ajouter ou modifier">
+          <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
+        </div>
       </div><br/>
       <div class="form-group">
         <label for="github" id="medium">GitLab :</label>
-        <input type="url" class="form-control" id="github" placeholder="Ajouter ou modifier">
-      </div><br/>
-      <div class="form-group" id="medium">
-        <label for="sof">StackOverFlow : </label>
-        <input type="url" class="form-control" id="sof" placeholder="Ajouter ou modifier">
+        <div class="input-group">
+          <input type="url" class="form-control" id="github" placeholder="Ajouter ou modifier">
+          <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
+        </div>
       </div><br/>
       <div class="col text-center">
         <button id="change_lien" type="submit" class="btn btn-success">Ajouter</button>
@@ -176,6 +192,7 @@ $(()=>{
           </div>
         </form>
   </div>
+  <br/>
     `)
 
   setValeur();
@@ -207,13 +224,16 @@ $(()=>{
             case "genre":
               document.getElementById("genre_select").value = valeur_info[arg];
             break
-            case "cv":
+            /*case "cv":
               console.log(arg)
               console.log(valeur_info[arg])
-              document.getElementById(arg).value = valeur_info[arg];
+              document.getElementById(arg).value = valeur_info[arg];*/
+
             case "type":
               break
             default:
+              console.log(arg)
+              console.log(valeur_info[arg])
               document.getElementById(arg).value = valeur_info[arg];
               break
           }

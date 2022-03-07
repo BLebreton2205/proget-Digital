@@ -60,8 +60,8 @@ function newCardCursus(etudiant) {
       </div>
       <div class="card-footer">
 
-      <form method="post" action="/Cursus">
-        <input name="cursus" type="hidden" value="${etudiant.Id_etudiant}"/>
+      <form method="post" action="/Compte">
+        <input name="etudiant" type="hidden" value="${etudiant.Id_etudiant}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>

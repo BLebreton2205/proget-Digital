@@ -7,6 +7,7 @@ let CLIENT_BEGIN = `
         <link rel="stylesheet" href="../css/tagin.min.css"></link>
         <link rel="stylesheet" href="../css/style.css"></link>
         <link href="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
         <script src="../jquery-3.6.0.slim.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/js/froala_editor.pkgd.min.js"></script>
@@ -320,6 +321,48 @@ io_server.on("connection", socket_client => {
       }
     })
 
+    socket_client.on("InfoEtudiantPlease", (eleve) => {
+      if(eleve){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT Id_etudiant, genre, nom, prenom, Id_cursus, mail, numero, cv, siteweb, linkedin, twitter, facebook, github, gitlab FROM etudiants WHERE Id_etudiant = ${eleve}`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+              var Result = {
+                'Id_etudiant' : rows[0].Id_etudiant,
+                'genre': rows[0].genre,
+                'nom': rows[0].nom,
+                'prenom': rows[0].prenom,
+                'Id_cursus': rows[0].Id_cursus,
+                'mail': rows[0].mail,
+                'numero': rows[0].numero,
+                'cv': rows[0].cv,
+                'siteweb': rows[0].siteweb,
+                'linkedin': rows[0].linkedin,
+                'twitter': rows[0].twitter,
+                'facebook': rows[0].facebook,
+                'github': rows[0].github,
+                'gitlab': rows[0].gitlab
+              };
+
+              connection.release()    // return the connection to pool
+              if(!err){
+              //  console.log(Result)
+                io_server.emit("Etudiant", Result)
+              } else {
+                  console.log(err+"1")
+              }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    })
+
     socket_client.on("InfoPlease", (token) => {
       //console.log(waiting_user)
       let find = null; //contiendra le descripteur trouve
@@ -344,7 +387,7 @@ io_server.on("connection", socket_client => {
               if(!err){
                 switch (info.type) {
                   case "etudiants":
-                    io_server.emit("setInfo",{type: info.type, genre: Result['genre'], nom: Result['nom'], prenom: Result['prenom'], mail: Result['mail'], numero: Result['numero'], cv: Result['cv'], siteweb: Result['siteweb'], linkedin: Result['linkedin'], twitter: Result['twitter'], facebook: Result['facebook'], github: Result['github'], gitlab: Result['gitlab'], sof: Result['sof']});
+                    io_server.emit("setInfo",{type: info.type, genre: Result['genre'], nom: Result['nom'], prenom: Result['prenom'], mail: Result['mail'], numero: Result['numero'], cv: Result['cv'], siteweb: Result['siteweb'], linkedin: Result['linkedin'], twitter: Result['twitter'], facebook: Result['facebook'], github: Result['github'], gitlab: Result['gitlab']});
                     break;
                   case "entreprise":
                     io_server.emit("setInfo",{type: info.type, nom: Result['nom'], mail: Result['mail'], description: Result['description'], siteweb: Result['siteweb'], linkedin: Result['linkedin'], twitter: Result['twitter'], facebook: Result['facebook']});
@@ -371,7 +414,7 @@ io_server.on("connection", socket_client => {
       let i = 0;
       switch (newVal.type) {
         case "etudiants":
-          critere = ["genre", "nom", "prenom", "mail", "numero", "siteweb", "linkedin", "twitter", "facebook", "github", "gitlab", "sof"];
+          critere = ["genre", "nom", "prenom", "mail", "numero", "siteweb", "linkedin", "twitter", "facebook", "github", "gitlab"];
           selectQuery = `UPDATE ${newVal.type} SET `;
           for(let value in newVal){
             for (let crit of critere) {
@@ -690,38 +733,19 @@ app.all("/VosStages", (req, res) => {
 app.all("/Compte", (req, res) => {
   //console.log(req.cookies);
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
-  else if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/Compte", "Compte | DigiStage", true, ["token = 'user';"]);
+  else if(req.cookies.user && req.cookies.user.type == "entreprise"){
+    if(req.body.etudiant){
+      tools.sendClientPage(res, "connected/entreprise/CompteEtudiant", "Compte étudiant | DigiStage", true, ["token = 'user';", "Id_etudiant = "+req.body.etudiant]);
+    }else {
+      tools.sendClientPage(res, "connected/entreprise/Compte", "Votre compte | DigiStage", true, ["token = 'user';"]);
+    }
+  }
   else res.redirect("/login");
 })
 
 app.all("/Compte/dl_cv", (req, res) => {
-  console.log("Okey tout marche")
-  let find = null; //contiendra le descripteur trouve
-  let info = {};
-  for(let i=0; i<waiting_user.length; i++ ){
-    let desc = waiting_user[i];
-      if(desc.name == req.body['token']){
-      find = desc;
-      info = desc.info;
-    }
-  }
   console.log(req.body)
-  if(find){
-    var selectQuery = `SELECT cv FROM ${info.type} WHERE mail = '${info.mail}'`;
-    console.log(selectQuery)
-    pool.getConnection((err, connection) => {
-    if(err) throw err
-    console.log(`Connecté à l'id ${connection.threadId}`)
-
-    connection.query(selectQuery, (err, result) => {
-      console.log(result)
-      res.download(__dirname+"\\uploads\\perm\\"+result[0]['cv'])
-      if(err){
-          console.log(err+"1")
-        };
-      });
-    })
-  }
+  res.download(__dirname+"\\uploads\\perm\\"+req.body.cvEtudiant);
 })
 
 app.all("/Compte/new_cv", permUpload.single('resume'), function (req, res) {
