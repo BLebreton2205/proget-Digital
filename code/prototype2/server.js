@@ -158,7 +158,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("CursusPlease", () => {
       console.log('Hey oh !')
-      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
+      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nomEcole`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
       pool.getConnection((err, connection) => {
         if(err) throw err
         console.log(`Connecté à l'id ${connection.threadId}`)
@@ -169,18 +169,43 @@ io_server.on("connection", socket_client => {
             let nb = 0;
             for( let cur in rows ){
               nb++
-              console.log(rows);
               Cursus["cursus"+nb] = {
                 'Id_cursus' : rows[nb-1].Id_cursus,
                 'titre': rows[nb-1].titre,
-                'etablissement': rows[nb-1].nom,
+                'etablissement': rows[nb-1].nomEcole,
                 'periode': rows[nb-1].periode
               };
-              console.log(Cursus);
             }
             if(!err){
-              console.log(Cursus)
               io_server.emit("LesCursus", Cursus)
+            }
+        })
+      })
+    })
+
+    socket_client.on("EtudiantsPlease", () => {
+      console.log('Hey oh !')
+      var selectQuery = 'SELECT `Id_etudiant`, `nom`, `prenom`, `titre`, `nomEcole` FROM `etudiants`, `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole AND cursus.Id_cursus = etudiants.Id_cursus';
+      pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        connection.query(selectQuery, (err, rows) => {
+          console.log(err)
+            connection.release();
+            let Etudiants = {};
+            let nb = 0;
+            for( let etudiant in rows ){
+              nb++
+              Etudiants["etudiant"+nb] = {
+                'Id_etudiant' : rows[nb-1].Id_etudiant,
+                'nom': rows[nb-1].nom,
+                'prenom': rows[nb-1].prenom,
+                'cursus': rows[nb-1].titre,
+                'etablissement': rows[nb-1].nomEcole
+              };
+            }
+            if(!err){
+              io_server.emit("LesEtudiants", Etudiants)
             }
         })
       })
@@ -262,7 +287,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("InfoCursusPlease", (cursus) => {
       if(cursus){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT Id_cursus, titre, nom, periode, cursus.description, infos FROM cursus, etablissement WHERE Id_cursus = '${cursus}' AND cursus.Id_ecole=etablissement.Id_ecole`;
+        var selectQuery = `SELECT Id_cursus, titre, nomEcole, periode, cursus.description, infos FROM cursus, etablissement WHERE Id_cursus = '${cursus}' AND cursus.Id_ecole=etablissement.Id_ecole`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -273,7 +298,7 @@ io_server.on("connection", socket_client => {
               var Result = {
                 'Id_cursus' : rows[0].Id_stage,
                 'titre': rows[0].titre,
-                'etablissement': rows[0].nom,
+                'etablissement': rows[0].nomEcole,
                 'periode': rows[0].periode,
                 'description': rows[0].description,
                 'infos': rows[0].infos
@@ -649,6 +674,11 @@ app.all("/StageDispo", (req, res) => {
 
 app.all("/PromoDispo", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/PromoDispo", "Disponibilité des cursus | DigiStage", true, ["token = 'user';"]);
+  else res.redirect("/login");
+})
+
+app.all("/ListeEtudiants", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = 'user';", " Id_cursus = "+req.body.cursus]);
   else res.redirect("/login");
 })
 
