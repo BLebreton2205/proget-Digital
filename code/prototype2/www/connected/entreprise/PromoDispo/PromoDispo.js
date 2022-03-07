@@ -1,0 +1,75 @@
+var io_client = io();
+
+io_client.emit("CursusPlease");
+
+let Stages = {};
+
+
+$(() => {
+
+  let body = $('body').append(`
+    <nav class="navbar navbar-dark bg-dark box-shadow navbar-fixed-top sticky">
+      <div class="container d-flex justify-content-between">
+        <a href="/interface" class="navbar-brand d-flex align-items-center">
+          <strong>DIGISTAGE.RE</strong>
+          </a>
+        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
+          <h2>Propositions</h2>
+        </a>
+        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
+          <h2>Disponibilités</h2>
+        </a>
+        <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
+      </div>
+    </nav>
+
+    <h1 class="text-center">Les périodes de stages des Cursus</h1>
+
+    <br/>
+    `);
+    affichageDesCursus(body);
+})
+function affichageDesCursus(body) {
+  io_client.on("LesCursus", cursus => {
+    console.log(cursus)
+    Cursus = cursus;
+
+    let cardGroup = `
+      <div class="container">
+        <div class="row">
+    `
+    for(cur in Cursus) {
+      let card = newCardCursus(Cursus[cur]);
+
+      cardGroup = cardGroup+card;
+    }
+
+    cardGroup = cardGroup+"</div></div>";
+
+    console.log(cardGroup);
+
+    body.append(cardGroup);
+  })
+}
+function newCardCursus(cursus) {
+  let card_html = `
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+    <div class="card" style="margin:2%">
+      <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title text-center">${cursus.titre}</h5>
+        <p class="card-text">${cursus.etablissement}</p>
+        <p class="card-text">${cursus.periode}</p>
+      </div>
+      <div class="card-footer">
+
+      <form method="post" action="/Cursus">
+        <input name="stage" type="hidden" value="${cursus.Id_cursus}"/>
+        <button type="submit" class="btn btn-primary">Lire plus</button>
+      </form>
+      </div>
+    </div>
+  </div>
+  `
+  return card_html
+}

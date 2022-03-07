@@ -156,6 +156,36 @@ io_server.on("connection", socket_client => {
       })
     })
 
+    socket_client.on("CursusPlease", () => {
+      console.log('Hey oh !')
+      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
+      pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        connection.query(selectQuery, (err, rows) => {
+          console.log(err)
+            connection.release();
+            let Cursus = {};
+            let nb = 0;
+            for( let cur in rows ){
+              nb++
+              console.log(rows);
+              Cursus["cursus"+nb] = {
+                'Id_cursus' : rows[nb-1].Id_cursus,
+                'titre': rows[nb-1].titre,
+                'etablissement': rows[nb-1].nom,
+                'periode': rows[nb-1].periode
+              };
+              console.log(Cursus);
+            }
+            if(!err){
+              console.log(Cursus)
+              io_server.emit("LesCursus", Cursus)
+            }
+        })
+      })
+    })
+
     socket_client.on("MesStages", token => {
       let find = null; //contiendra le descripteur trouve
       let info = {};
@@ -435,17 +465,17 @@ app.post("/Stage", (req, res) => {
   }
   else if(req.cookies.user && req.cookies.user.type == "entreprise"){
       var stage = req.body[stage];
-      tools.sendClientPage(res, "connected/entreprise/Stage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
+      tools.sendClientPage(res, "connected/entreprise/Stage", "Votre stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
     }
   else res.redirect("/login");
 })
 
 app.all("/Stage/edit", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "entreprise"){
-      if(req.body.id) tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.id]);
+      if(req.body.id) tools.sendClientPage(res, "connected/entreprise/EditStage", "Modifier votre stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.id]);
       else{
         console.log("Nouveau");
-        tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user'; Id_stage = false" ]);
+        tools.sendClientPage(res, "connected/entreprise/EditStage", "Créer votre stage | DigiStage", true, ["token = 'user'; Id_stage = false" ]);
       }
     }
   else res.redirect("/login");
@@ -568,6 +598,11 @@ app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
 
 app.all("/StageDispo", (req, res) => {
   if(req.cookies.user && req.cookies.user.type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = 'user';"]);
+  else res.redirect("/login");
+})
+
+app.all("/PromoDispo", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise") tools.sendClientPage(res, "connected/entreprise/PromoDispo", "Disponibilité des cursus | DigiStage", true, ["token = 'user';"]);
   else res.redirect("/login");
 })
 
