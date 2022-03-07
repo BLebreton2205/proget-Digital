@@ -44,7 +44,6 @@ function affichageDesCursus(body) {
 
     cardGroup = cardGroup+"</div></div>";
 
-    console.log(cardGroup);
 
     body.append(cardGroup);
   })

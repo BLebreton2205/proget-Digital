@@ -183,9 +183,10 @@ io_server.on("connection", socket_client => {
       })
     })
 
-    socket_client.on("EtudiantsPlease", () => {
+    socket_client.on("EtudiantsPlease", (Id_cursus) => {
       console.log('Hey oh !')
-      var selectQuery = 'SELECT `Id_etudiant`, `nom`, `prenom`, `titre`, `nomEcole` FROM `etudiants`, `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole AND cursus.Id_cursus = etudiants.Id_cursus';
+      var selectQuery = 'SELECT `Id_etudiant`, `nom`, `prenom`, `titre`, `nomEcole` FROM `etudiants`, `cursus`, `etablissement` WHERE etudiants.Id_cursus='+Id_cursus+' AND cursus.Id_cursus = '+Id_cursus;
+      console.log(selectQuery)
       pool.getConnection((err, connection) => {
         if(err) throw err
         console.log(`Connecté à l'id ${connection.threadId}`)
@@ -294,9 +295,8 @@ io_server.on("connection", socket_client => {
           console.log(`Connecté à l'id ${connection.threadId}`)
 
           connection.query(selectQuery, (err, rows) => {
-          //console.log("okey")
               var Result = {
-                'Id_cursus' : rows[0].Id_stage,
+                'Id_cursus' : rows[0].Id_cursus,
                 'titre': rows[0].titre,
                 'etablissement': rows[0].nomEcole,
                 'periode': rows[0].periode,

@@ -26,6 +26,7 @@ $(()=>{
 
 function leStage(body) {
   io_client.on("LeCursus", cursus => {
+    console.log(cursus.Id_cursus)
     let cardGroup = `
     <h1 class="text-center">${cursus.titre}</h1>
     <h2 class="text-center sous_titre_Stage">${cursus.etablissement}</h2>
