@@ -260,6 +260,41 @@ io_server.on("connection", socket_client => {
       }
     })
 
+    socket_client.on("InfoCursusPlease", (cursus) => {
+      if(cursus){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT Id_cursus, titre, nom, periode, cursus.description, infos FROM cursus, etablissement WHERE Id_cursus = '${cursus}' AND cursus.Id_ecole=etablissement.Id_ecole`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+          //console.log("okey")
+              var Result = {
+                'Id_cursus' : rows[0].Id_stage,
+                'titre': rows[0].titre,
+                'etablissement': rows[0].nom,
+                'periode': rows[0].periode,
+                'description': rows[0].description,
+                'infos': rows[0].infos
+              };
+
+              connection.release()    // return the connection to pool
+              if(!err){
+              //  console.log(Result)
+                io_server.emit("LeCursus", Result)
+              } else {
+                  console.log(err+"1")
+              }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    })
+
     socket_client.on("InfoPlease", (token) => {
       //console.log(waiting_user)
       let find = null; //contiendra le descripteur trouve
@@ -467,6 +502,17 @@ app.post("/Stage", (req, res) => {
       var stage = req.body[stage];
       tools.sendClientPage(res, "connected/entreprise/Stage", "Votre stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
     }
+  else res.redirect("/login");
+})
+
+app.post("/Cursus", (req, res) => {
+  if(req.cookies.user && req.cookies.user.type == "entreprise"){
+    tools.sendClientPage(res, "connected/entreprise/Cursus", "Cursus | DigiStage", true, ["token = 'user';", "Id_cursus = "+req.body.cursus]);
+  }
+  /*else if(req.cookies.user && req.cookies.user.type == "entreprise"){
+      var stage = req.body[stage];
+      tools.sendClientPage(res, "connected/entreprise/Stage", "Votre stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.stage]);
+    }*/
   else res.redirect("/login");
 })
 

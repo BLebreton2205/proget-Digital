@@ -64,7 +64,7 @@ function newCardCursus(cursus) {
       <div class="card-footer">
 
       <form method="post" action="/Cursus">
-        <input name="stage" type="hidden" value="${cursus.Id_cursus}"/>
+        <input name="cursus" type="hidden" value="${cursus.Id_cursus}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>
