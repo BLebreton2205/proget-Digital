@@ -27,6 +27,8 @@ $(()=>{
       <p id="d"></p>
     </div>
 
+    <p class="text-center" id="periode"></p>
+
     <br/><hr/><br/>
 
     <h2 class="sous_titre">Plus d'information :</h2>
@@ -45,9 +47,10 @@ $(()=>{
           </form>
         </div>
         <div class="col text-center">
-          <a href="/VosStages" id="supp">
-            <button type="button" class="btn btn-danger">Suprimer</button>
-          </a>
+          <form action="/Stage/suppression" method="post">
+            <input name="id" type="hidden" value=${Id_stage} />
+            <button type="submit" class="btn btn-danger" id="supprim">Suprimer</button>
+          </form>
         </div>
       </div>
     </div>
@@ -61,7 +64,12 @@ function leStage() {
     document.getElementById('titre').innerHTML = stage.titre;
     document.getElementById('nom_entreprise').innerHTML = stage.entreprise;
     document.getElementById('d').innerHTML = stage.description;
+    document.getElementById('periode').innerHTML = stage.periode;
     var infos = JSON.parse(stage.infos);
-    if(infos["type"] == "lien") document.getElementById('lien').href = infos["info"];
+    console.log(infos);
+    for(info in infos){
+      console.log(infos[info].type);
+      if(infos[info].type == "lien") document.getElementById('lien').href = infos[info].info;
+    }
   })
 }

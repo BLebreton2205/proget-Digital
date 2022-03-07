@@ -4,11 +4,14 @@ let CLIENT_BEGIN = `
     <head>
         <meta charset="utf8"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/tagin.min.css"></link>
         <link rel="stylesheet" href="../css/style.css"></link>
         <link href="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+
         <script src="../jquery-3.6.0.slim.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/js/froala_editor.pkgd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="../script/tagin.min.js"></script>
 `
 let CLIENT_END = `
     </head>
@@ -206,7 +209,7 @@ io_server.on("connection", socket_client => {
                 'titre': rows[0].titre,
                 'entreprise': rows[0].nom,
                 'periode': rows[0].periode,
-                'motcle':rows[0].motcle,
+                'motCle':rows[0].motcle,
                 'description': rows[0].description,
                 'infos': rows[0].infos
               };
@@ -369,6 +372,7 @@ app.all("/Connect", (req, res) => {
 
   let userData = {
     type: '',
+    id: '',
     mail: ''
   }
 
@@ -393,12 +397,14 @@ app.all("/Connect", (req, res) => {
           switch(userData.type){
             case "etudiants":
               console.log("Send Page - Etudiant");
+              userData.id = Result['Id_etudiant'];
               res.cookie("user", userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
               break
             case "entreprise":
               console.log("Send Page - Entreprise");
+              userData.id = Result['Id_entreprise'];
               res.cookie("user", userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser("user", userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
@@ -446,14 +452,83 @@ app.all("/Stage/edit", (req, res) => {
 })
 
 app.post("/Stage/save", (req, res) => {
-  if(req.cookies.user && req.cookies.user.type == "entreprise"){
-      if(req.body.id) tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user';", "Id_stage = "+req.body.id]);
-      else{
-        console.log("Nouveau");
-        tools.sendClientPage(res, "connected/entreprise/EditStage", "Stage | DigiStage", true, ["token = 'user'; Id_stage = false" ]);
+  var jsonInfo = {};
+  console.log(req.body.id_stage)
+  if(req.body.id_stage!="false") {
+    console.log(`Modification du stage ${req.body.id_stage}`);
+    selectQuery = `UPDATE stage SET titre="${req.body.saveTitre}", periode="${req.body.savePeriode}", motCle="${req.body.saveMotCle}",description="${req.body.saveDescription}"`;
+    if (req.body.saveLien) {
+      var key = "info1";
+      jsonInfo[key] = {
+        type: 'lien',
+        info: req.body.saveLien,
       }
     }
-  else res.redirect("/login");
+    selectQuery = selectQuery+`, infos='${JSON.stringify(jsonInfo)}' WHERE Id_stage='${req.body.id_stage}'`
+    console.log(selectQuery);
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+              res.redirect("/VosStages");
+          }
+      })
+    })
+  }
+  else {
+    console.log("Création du stage");
+    console.log(req.body.token);
+    let find = null;
+    let info = {};
+    for(let i=0; i<waiting_user.length; i++ ){
+      let desc = waiting_user[i];
+        if(desc.name == req.body.token){
+        find = desc;
+        info = desc.info;
+      }
+    }
+    console.log(waiting_user);
+    if(find){
+      //INSERT INTO `stage`(`Id_entreprise`, `titre`, `periode`, `motcle`, `description`, `infos`) VALUES (1,'test','test','test','test','{"info1":{"type":"lien","info":"https://Test.test"}}')
+      selectQuery = `INSERT INTO stage(Id_entreprise, titre, periode, motCle, description, infos) VALUES (${info.id},'${req.body.saveTitre}','${req.body.savePeriode}', '${req.body.saveMotCle}','${req.body.saveDescription}',`;
+      if (req.body.saveLien) {
+        var key = "info1";
+        jsonInfo[key] = {
+          type: 'lien',
+          info: req.body.saveLien,
+        }
+      }
+      selectQuery = selectQuery+`'${JSON.stringify(jsonInfo)}')`;
+      console.log(selectQuery);
+      pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        connection.query(selectQuery, (err, rows) => {
+            connection.release();
+            if(!err){
+                res.redirect("/VosStages");
+            } else console.log(err)
+        })
+      })
+    }
+  };
+})
+
+app.post("/Stage/suppression", (req, res) => {
+    selectQuery = `Delete FROM stage WHERE Id_stage="${req.body.id}"`;
+    console.log(selectQuery);
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+              res.redirect("/VosStages");
+          }
+      })
+    })
 })
 
 app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
