@@ -52,7 +52,7 @@ $(()=>{
           </div><br/>
           <div class="form-group" id="medium">
               <label for="confNewMdp">Confirmer le nouveau mot de passe : </label>
-              <input type="password" class="form-control" id="confNewMdp">
+              <input type="password" class="form-control" name="confNewMdp">
           </div><br/>
         </form>
 
@@ -68,4 +68,13 @@ $(()=>{
         </div>
     </div>
     `);
+    if(nom){
+      document.getElementsByName('nom')[0].value = nom;
+      document.getElementsByName('prenom')[0].value = prenom;
+      document.getElementsByName('mail')[0].value = mail;
+      $("[name='newMdp']").addClass("is-invalid");
+      $("[name='newMdp']").placeholder = 
+      $("[name='confNewMdp']").addClass("is-invalid");
+    }
+
 })

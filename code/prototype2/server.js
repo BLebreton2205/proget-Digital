@@ -24,6 +24,7 @@ let CLIENT_END = `
 /*  Importation des différents packages NodeJS  */
 /*region*/
 const express = require('express');
+const url = require('url');
 const mysql = require('mysql');
 const http = require("http");
 const cookieParser = require('cookie-parser');
@@ -87,7 +88,8 @@ let waiting_user = []; //Listes des utilisateurs
 /*  Ensemble des outils de traitements du serveur */
 let tools = {
   /*  Fonction permettant d'envoyer la page au client */
-  sendClientPage(res, dir_script, titre, send_socket_io, client_code){
+  sendClientPage(res, dir_script, titre, send_socket_io, client_code, arg_get){
+
   //dir script : dossier des script a transmettre
     res.write(CLIENT_BEGIN);
     res.write(`<title>${titre}</title>`)
@@ -100,6 +102,12 @@ let tools = {
       //res.write("\n <script>"+client_code+"</script>");
       for(arg in client_code){
         res.write("\n <script>"+client_code[arg]+"</script>");
+      }
+    }
+
+    if(arg_get){
+      for(arg in arg_get){
+        res.write("\n <script>"+arg+"='"+arg_get[arg]+"'</script>");
       }
     }
 
@@ -526,6 +534,21 @@ io_server.on("connection", socket_client => {
     });
 });
 
+function URItoArg(url){
+  let uri = url.substr( url.indexOf('?')+1 );
+  let tab_param = uri.split('&');
+  //console.log(tab_param)
+  let arg_get = {};
+  for(let couple of tab_param){
+    let tab = couple.split("=");
+    if(tab[1]) arg_get[tab[0]] = encodeURIComponent(tab[1]);
+    else {
+      return false;
+    }
+  }
+  return arg_get
+}
+
 /*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
 /*region*/
 app.all(["/login"], (req, res) => {
@@ -944,43 +967,60 @@ app.all("/ListeEtudiants", (req, res) => {
 app.all("/ListeEtudiants/NewEtudiant", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/AddEtudiant", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
-      else res.redirect("/login");
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
+        let arg_get = URItoArg(req.url);
+        //console.log(req.url)
+        if(arg_get) tools.sendClientPage(res, "connected/etablissement/AddEtudiant", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus], arg_get);
+        else tools.sendClientPage(res, "connected/etablissement/AddEtudiant", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
+      }else res.redirect("/login");
     }
   }else res.redirect("/login");
 
 })
 
 app.all("/ListeEtudiants/AddEtudiant", (req, res) => {
-  let mailOptions = {
-    from: 'baptiste.lebreton@esiroi.re',
-    to: req.body.mail,
-    subject: '[DigiStage] Création de votre compte',
-    text: `Bonjour ${req.body.nom} ${req.body.prenom},
-    Un compte sur notre site a été créé. Voici les Identifiants temporaires de votre compte.
-        - mail : ${req.body.mail} ;
-        - Mot de passe : ${req.body.newMdp}.
-    Rendez vous sur Digistage et accéder à votre compte pour pouvoir modifier ces informations.
-    `
-  }
-  selectQuery = `INSERT INTO etudiants(Id_cursus, nom, prenom, mail, mdp) VALUES (${req.body.cursus},'${req.body.nom}','${req.body.prenom}','${req.body.mail}','${req.body.newMdp}')`;
-  pool.getConnection((err, connection) => {
-    if(err) throw err
-    console.log(`Connecté à l'id ${connection.threadId}`)
-    connection.query(selectQuery, (err, rows) => {
-        connection.release();
-        if(!err){
-          transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-              console.log(error);
-            } else {
-              console.log('Email sent: ' + info.response);
-              res.redirect("/StageDispo");
-            }
-          });
-        } else console.log(err)
+  if(req.body.newMdp == req.body.confNewMdp) {
+    let mailOptions = {
+      from: 'baptiste.lebreton@esiroi.re',
+      to: req.body.mail,
+      subject: '[DigiStage] Création de votre compte',
+      text: `Bonjour ${req.body.nom} ${req.body.prenom},
+      Un compte sur notre site a été créé. Voici les Identifiants temporaires de votre compte.
+          - mail : ${req.body.mail} ;
+          - Mot de passe : ${req.body.newMdp}.
+      Rendez vous sur Digistage et accéder à votre compte pour pouvoir modifier ces informations.
+      `
+    }
+    selectQuery = `INSERT INTO etudiants(Id_cursus, nom, prenom, mail, mdp) VALUES (${req.body.cursus},'${req.body.nom}','${req.body.prenom}','${req.body.mail}','${req.body.newMdp}')`;
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+            transporter.sendMail(mailOptions, function(error, info){
+              if (error) {
+                console.log(error);
+              } else {
+                console.log('Email sent: ' + info.response);
+                res.redirect("/StageDispo");
+              }
+            });
+          } else console.log(err)
+      })
     })
-  })
+  }else {
+    console.log("Mot de passe non identique")
+    //res.redirect(`/ListeEtudiants/NewEtudiant?nom=${req.body.nom}`);
+    res.redirect(url.format({
+      pathname:'/ListeEtudiants/NewEtudiant',
+      query: {
+        "nom":req.body.nom,
+        "prenom":req.body.prenom,
+        "mail":req.body.mail
+      }
+    }))
+  }
 })
 
 app.all("/VosStages", (req, res) => {
