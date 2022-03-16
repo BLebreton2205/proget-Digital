@@ -68,5 +68,21 @@ $(() => {
         </aside>
       </div>
   </div>`)
+  if(error){
+    switch (error) {
+      case "mdp":
+        document.getElementById('mail').value = mail;
+        document.getElementById("type_connect").value = type;
+        $("#mdp").addClass("is-invalid");
+        break;
+      case "mail":
+        document.getElementById('mail').value = mail;
+        document.getElementById("type_connect").value = type;
+        $("#mail").addClass("is-invalid");
+        break;
+      default:
+
+    }
+  }
 
 })

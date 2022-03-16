@@ -73,7 +73,6 @@ $(()=>{
       document.getElementsByName('prenom')[0].value = prenom;
       document.getElementsByName('mail')[0].value = mail;
       $("[name='newMdp']").addClass("is-invalid");
-      $("[name='newMdp']").placeholder = 
       $("[name='confNewMdp']").addClass("is-invalid");
     }
 

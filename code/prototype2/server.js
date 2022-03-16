@@ -107,6 +107,7 @@ let tools = {
 
     if(arg_get){
       for(arg in arg_get){
+        console.log(arg_get[arg])
         res.write("\n <script>"+arg+"='"+arg_get[arg]+"'</script>");
       }
     }
@@ -537,11 +538,10 @@ io_server.on("connection", socket_client => {
 function URItoArg(url){
   let uri = url.substr( url.indexOf('?')+1 );
   let tab_param = uri.split('&');
-  //console.log(tab_param)
   let arg_get = {};
   for(let couple of tab_param){
     let tab = couple.split("=");
-    if(tab[1]) arg_get[tab[0]] = encodeURIComponent(tab[1]);
+    if(tab[1]) arg_get[tab[0]] = decodeURIComponent(tab[1]);
     else {
       return false;
     }
@@ -557,7 +557,10 @@ app.all(["/login"], (req, res) => {
     console.log(cookie + " effacer !")
     res.clearCookie(cookie);
   }
-  tools.sendClientPage(res, "public", "Se connecter | DigiStage");
+  let arg_get = URItoArg(req.url);
+  console.log(req.url)
+  if(arg_get) tools.sendClientPage(res, "public", "Se connecter | DigiStage", false, null, arg_get);
+  else tools.sendClientPage(res, "public", "Se connecter | DigiStage");
 })
 
 app.all("/Connect", (req, res) => {
@@ -640,11 +643,27 @@ app.all("/Connect", (req, res) => {
           }
         }else{
           console.log("Mauvais mot de passe");
-          res.redirect("/login");
+          res.redirect(url.format({
+            pathname:'/login',
+            query: {
+              "error":"mdp",
+              "mail":encodeURI(req.body.email),
+              "mdp":encodeURI(req.body.mdp),
+              "type":encodeURI(req.body.type)
+            }
+          }))
         }
       }else{
         console.log("Mauvaise addresse mail");
-        res.redirect("/login");
+        res.redirect(url.format({
+          pathname:'/login',
+          query: {
+            "error":"mail",
+            "mail":encodeURI(req.body.email),
+            "mdp":encodeURI(req.body.mdp),
+            "type":encodeURI(req.body.type)
+          }
+        }))
       };
     });
   })
