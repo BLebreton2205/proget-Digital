@@ -7,7 +7,7 @@ $(() => {
             <a class="navbar-brand d-flex align-items-center">
               <strong>DIGISTAGE.RE</strong>
             </a>
-            <a href="/login" class="btn btn-outline-secondary">Se connecter</a>
+            <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
             </button>
           </div>
         </div>
@@ -53,7 +53,7 @@ $(() => {
               <form>
               <div class="form-group">
                 <label for="type-selector" id="medium">Êtes-vous :</label><br/>
-                <select name="genre" id="type_creer">
+                <select class="form-select" name="genre" id="type_creer">
                   <option value="entreprise">Entreprise</option>
                   <option value="etablissement">Établissement</option>
                 </select>

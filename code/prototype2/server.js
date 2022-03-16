@@ -601,7 +601,7 @@ app.all("/Connect", (req, res) => {
 
             case "etablissement":
               console.log("Send Page - Etablissement");
-              userData.id = Result['Id_etablissement'];
+              userData.id = Result['Id_ecole'];
               name_cookie = "etablissement-"+Math.floor(Math.random() * 1000);
               i = 0;
               while (i < waiting_user.length){
@@ -773,6 +773,103 @@ app.post("/Stage/suppression", (req, res) => {
     })
 })
 
+app.all("/Cursus/edit", (req, res) => {
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
+          if(req.body.id) tools.sendClientPage(res, "connected/etablissement/EditCursus", "Modifier votre cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.id]);
+          else{
+            console.log("Nouveau");
+            tools.sendClientPage(res, "connected/etablissement/EditCursus", "Créer votre cursus | DigiStage", true, ["token = '"+cookie+"'; Id_cursus = false" ]);
+          }
+        }
+      else res.redirect("/login");
+    }
+}else res.redirect("/login");
+
+})
+
+app.post("/Cursus/save", (req, res) => {
+  var jsonInfo = {};
+  //console.log(req.body.id_cursus)
+  if(req.body.id_cursus!="false") {
+    console.log(`Modification du stage ${req.body.id_cursus}`);
+    selectQuery = `UPDATE stage SET titre="${req.body.saveTitre}", periode="${req.body.savePeriode}", motCle="${req.body.saveMotCle}",description="${req.body.saveDescription}"`;
+    if (req.body.saveLien) {
+      var key = "info1";
+      jsonInfo[key] = {
+        type: 'lien',
+        info: req.body.saveLien,
+      }
+    }
+    selectQuery = selectQuery+`, infos='${JSON.stringify(jsonInfo)}' WHERE Id_stage='${req.body.id_cursus}'`
+    console.log(selectQuery);
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+              res.redirect("/VosCursus");
+          }
+      })
+    })
+  }
+  else {
+    console.log("Création du stage");
+    console.log(waiting_user);
+    let find = null;
+    let info = {};
+    for(let i=0; i<waiting_user.length; i++ ){
+      let desc = waiting_user[i];
+        if(desc.name == req.body.token){
+          console.log(waiting_user[i])
+        find = desc;
+        info = desc.info;
+      }
+    }
+    console.log(info);
+    if(find){
+      //INSERT INTO `stage`(`Id_entreprise`, `titre`, `periode`, `motcle`, `description`, `infos`) VALUES (1,'test','test','test','test','{"info1":{"type":"lien","info":"https://Test.test"}}')
+      selectQuery = `INSERT INTO cursus(Id_ecole, titre, periode, motCle, description, infos) VALUES (${info.id},'${req.body.saveTitre}','${req.body.savePeriode}', '${req.body.saveMotCle}','${req.body.saveDescription}',`;
+      if (req.body.saveLien) {
+        var key = "info1";
+        jsonInfo[key] = {
+          type: 'lien',
+          info: req.body.saveLien,
+        }
+      }
+      selectQuery = selectQuery+`'${JSON.stringify(jsonInfo)}')`;
+      console.log(selectQuery);
+      pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        connection.query(selectQuery, (err, rows) => {
+            connection.release();
+            if(!err){
+                res.redirect("/VosCursus");
+            } else console.log(err)
+        })
+      })
+    }
+  };
+})
+
+app.post("/Cursus/suppression", (req, res) => {
+    selectQuery = `Delete FROM cursus WHERE Id_cursus="${req.body.id}"`;
+    console.log(selectQuery);
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+              res.redirect("/VosCursus");
+          }
+      })
+    })
+})
+
 app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
 
   let mailOptions = {
@@ -832,6 +929,7 @@ app.all("/ListeEtudiants", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -855,6 +953,7 @@ app.all("/VosCursus", (req, res) => {
     }
   }else res.redirect("/login");
 })
+
 app.all("/Compte", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {

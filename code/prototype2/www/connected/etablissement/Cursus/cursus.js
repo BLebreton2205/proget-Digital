@@ -51,13 +51,13 @@ $(()=>{
     <br/><hr/><br/>
       <div class="row">
         <div class="col text-center">
-          <form method="post" action="/Stage/edit">
+          <form method="post" action="/Cursus/edit">
             <input name="id" type="hidden" value="${Id_cursus}"/>
             <button type="submit" class="btn btn-success" id="editStage">Modifier</button>
           </form>
         </div>
         <div class="col text-center">
-          <form action="/Stage/suppression" method="post">
+          <form action="/Cursus/suppression" method="post">
             <input name="id" type="hidden" value=${Id_cursus} />
             <button type="submit" class="btn btn-danger" id="supprim">Suprimer</button>
           </form>
