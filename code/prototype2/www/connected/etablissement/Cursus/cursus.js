@@ -1,6 +1,6 @@
 var io_client = io();
 
-io_client.emit("InfoStagePlease", (Id_stage));
+io_client.emit("InfoCursusPlease", (Id_cursus));
 
 $(()=>{
   let body = $('body').append(`
@@ -9,11 +9,11 @@ $(()=>{
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
           </a>
-        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Propositions</h2>
+        <a href="/VosCursus" class = "navbar-brand d-flex align-items-center">
+          <h2>Cursus</h2>
         </a>
-        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Disponibilités</h2>
+        <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
+          <h2>Propositions</h2>
         </a>
         <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
         <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
@@ -38,18 +38,27 @@ $(()=>{
         <button class="btn btn-primary">Mon site</button>
       </a>
     </div>
+    <br/><hr/><br/>
+
+    <h2 class="sous_titre">Modification du cursus</h2>
+    <div class="text-center">
+      <form method="post" action="/ListeEtudiants">
+        <input name="cursus" type="hidden" value="${Id_cursus}"/>
+        <button class="btn btn-success">Liste des Étudiants</button>
+      </form>
+    </div>
 
     <br/><hr/><br/>
       <div class="row">
         <div class="col text-center">
           <form method="post" action="/Stage/edit">
-            <input name="id" type="hidden" value="${Id_stage}"/>
+            <input name="id" type="hidden" value="${Id_cursus}"/>
             <button type="submit" class="btn btn-success" id="editStage">Modifier</button>
           </form>
         </div>
         <div class="col text-center">
           <form action="/Stage/suppression" method="post">
-            <input name="id" type="hidden" value=${Id_stage} />
+            <input name="id" type="hidden" value=${Id_cursus} />
             <button type="submit" class="btn btn-danger" id="supprim">Suprimer</button>
           </form>
         </div>
@@ -57,16 +66,16 @@ $(()=>{
     </div>
     `);
 
-    leStage();
+    leCursus(body);
 })
 
-function leStage() {
-  io_client.on("LeStage", stage => {
-    document.getElementById('titre').innerHTML = stage.titre;
-    document.getElementById('nom_entreprise').innerHTML = stage.entreprise;
-    document.getElementById('d').innerHTML = stage.description;
-    document.getElementById('periode').innerHTML = stage.periode;
-    var infos = JSON.parse(stage.infos);
+function leCursus(body) {
+  io_client.on("LeCursus", cursus => {
+    document.getElementById('titre').innerHTML = cursus.titre;
+    document.getElementById('nom_entreprise').innerHTML = cursus.etablissement;
+    document.getElementById('d').innerHTML = cursus.description;
+    document.getElementById('periode').innerHTML = cursus.periode;
+    var infos = JSON.parse(cursus.infos);
     console.log(infos);
     for(info in infos){
       console.log(infos[info].type);

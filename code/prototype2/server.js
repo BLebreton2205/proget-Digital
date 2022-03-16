@@ -157,7 +157,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("CursusPlease", () => {
       console.log('Hey oh !')
-      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nomEcole`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
+      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
       pool.getConnection((err, connection) => {
         if(err) throw err
         console.log(`Connecté à l'id ${connection.threadId}`)
@@ -171,7 +171,7 @@ io_server.on("connection", socket_client => {
               Cursus["cursus"+nb] = {
                 'Id_cursus' : rows[nb-1].Id_cursus,
                 'titre': rows[nb-1].titre,
-                'etablissement': rows[nb-1].nomEcole,
+                'etablissement': rows[nb-1].nom,
                 'periode': rows[nb-1].periode
               };
             }
@@ -184,7 +184,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("EtudiantsPlease", (Id_cursus) => {
       console.log('Hey oh !')
-      var selectQuery = 'SELECT `Id_etudiant`, `nom`, `prenom`, `titre`, `nomEcole` FROM `etudiants`, `cursus`, `etablissement` WHERE etudiants.Id_cursus='+Id_cursus+' AND cursus.Id_cursus = '+Id_cursus;
+      var selectQuery = 'SELECT `Id_etudiant`, etudiants.nom AS nom, `prenom`, `titre`, etablissement.nom AS nomEcole FROM `etudiants`, `cursus`, `etablissement` WHERE etudiants.Id_cursus='+Id_cursus+' AND cursus.Id_cursus = '+Id_cursus;
       console.log(selectQuery)
       pool.getConnection((err, connection) => {
         if(err) throw err
@@ -248,6 +248,43 @@ io_server.on("connection", socket_client => {
       }
     })
 
+    socket_client.on("MesCursus", token => {
+      let find = null; //contiendra le descripteur trouve
+      let info = {};
+      for(let i=0; i<waiting_user.length; i++ ){
+        let desc = waiting_user[i];
+          if(desc.name == token){
+          find = desc;
+          info = desc.info;
+        }
+      }
+      if(find){
+        var selectQuery = `SELECT Id_cursus, titre, nom FROM etablissement, cursus WHERE mail='${info.mail}' AND cursus.Id_ecole=etablissement.Id_ecole`;
+        console.log(selectQuery)
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+          connection.query(selectQuery, (err, rows) => {
+              connection.release();
+              let Cursus = {};
+              let nb = 0;
+              for( let cur in rows ){
+                nb++
+                Cursus["cur"+nb] = {
+                  'Id_cursus' : rows[nb-1].Id_cursus,
+                  'titre': rows[nb-1].titre,
+                  'entreprise': rows[nb-1].nom
+                };
+              }
+              console.log(Cursus)
+              if(!err){
+                io_server.emit("LesCursus", Cursus)
+              }
+          })
+        })
+      }
+    })
+
     socket_client.on("InfoStagePlease", (stage) => {
       //console.log(stage);
       if(stage){ //on a bien trouver une corrspondance
@@ -287,7 +324,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("InfoCursusPlease", (cursus) => {
       if(cursus){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT Id_cursus, titre, nomEcole, periode, cursus.description, infos FROM cursus, etablissement WHERE Id_cursus = '${cursus}' AND cursus.Id_ecole=etablissement.Id_ecole`;
+        var selectQuery = `SELECT Id_cursus, titre, nom, periode, cursus.description, infos FROM cursus, etablissement WHERE Id_cursus = '${cursus}' AND cursus.Id_ecole=etablissement.Id_ecole`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -297,7 +334,7 @@ io_server.on("connection", socket_client => {
               var Result = {
                 'Id_cursus' : rows[0].Id_cursus,
                 'titre': rows[0].titre,
-                'etablissement': rows[0].nomEcole,
+                'etablissement': rows[0].nom,
                 'periode': rows[0].periode,
                 'description': rows[0].description,
                 'infos': rows[0].infos
@@ -626,6 +663,9 @@ app.post("/Cursus", (req, res) => {
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise"){
         tools.sendClientPage(res, "connected/entreprise/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
+      } else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
+        console.log(req.body)
+        tools.sendClientPage(res, "connected/etablissement/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
       }
       /*else if(req.cookies.user && req.cookies.user.type == "entreprise"){
           var stage = req.body[stage];
@@ -807,6 +847,14 @@ app.all("/VosStages", (req, res) => {
   }else res.redirect("/login");
 })
 
+app.all("/VosCursus", (req, res) => {
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/VosCursus", "Vos cursus | DigiStage", true, ["token = '"+cookie+"';"]);
+      else res.redirect("/login");
+    }
+  }else res.redirect("/login");
+})
 app.all("/Compte", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {

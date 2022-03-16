@@ -17,6 +17,7 @@ $(()=>{
           <h2>Disponibilités</h2>
         </a>
         <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
+        <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
       </div>
     </nav>
 

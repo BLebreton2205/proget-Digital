@@ -1,8 +1,8 @@
 var io_client = io();
 
-io_client.emit("EtudiantsPlease", Id_cursus);
+io_client.emit("MesCursus", token);
 
-let Etudiants = {};
+let Stages = {};
 
 $(() => {
 
@@ -12,57 +12,61 @@ $(() => {
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
           </a>
-        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Propositions</h2>
+        <a href="/VosCursus" class = "navbar-brand d-flex align-items-center">
+          <h2>Cursus</h2>
         </a>
-        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Disponibilités</h2>
+        <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
+          <h2>Propositions</h2>
         </a>
         <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
         <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
       </div>
     </nav>
 
-    <h1 class="text-center">Les périodes de stages des Cursus</h1>
+    <h1 class="text-center">Vos Cursus</h1>
 
-    <br/>
+    <div class="text-center">
+      <a href="/Stage/edit">
+        <button class="btn btn-success">Nouveau cusus</button>
+      </a>
+    </div><br/>
     `);
-    affichageDesCursus(body);
+    affichageDeVosCursus(body);
 })
-function affichageDesCursus(body) {
-  io_client.on("LesEtudiants", etudiant => {
-    Etudiants = etudiant;
+function affichageDeVosCursus(body) {
+  io_client.on("LesCursus", cur => {
+    console.log("AG")
+    Cursus = cur;
 
     let cardGroup = `
       <div class="container">
         <div class="row">
     `
-    for(etudiant in Etudiants) {
-      let card = newCardCursus(Etudiants[etudiant]);
+    for(cur in Cursus) {
+      let card = newCardCursus(Cursus[cur]);
 
       cardGroup = cardGroup+card;
     }
 
     cardGroup = cardGroup+"</div></div>";
 
-
     body.append(cardGroup);
+    console.log(cardGroup)
   })
 }
-function newCardCursus(etudiant) {
+function newCardCursus(cur) {
   let card_html = `
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
     <div class="card" style="margin:2%">
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
-        <h5 class="card-title text-center">${etudiant.nom} ${etudiant.prenom}</h5>
-        <p class="card-text">${etudiant.cursus}</p>
-        <p class="card-text">${etudiant.etablissement}</p>
+        <h5 class="card-title text-center">${cur.titre}</h5>
+        <p class="card-text">${cur.entreprise}</p>
       </div>
       <div class="card-footer">
 
-      <form method="post" action="/Compte">
-        <input name="etudiant" type="hidden" value="${etudiant.Id_etudiant}"/>
+      <form method="post" action="/Cursus">
+        <input name="cursus" type="hidden" value="${cur.Id_cursus}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>
