@@ -1,6 +1,6 @@
 var io_client = io();
 
-io_client.emit("InfoCursusPlease", (Id_cursus));
+io_client.emit("InfoStagePlease", (Id_stage));
 
 $(()=>{
   let body = $('body').append(`
@@ -22,6 +22,7 @@ $(()=>{
       </div>
     </nav>
 
+
     <div class="container-fluid">
     <h1 class="text-center" id="titre"></h1>
     <h2 class="text-center sous_titre_Stage" id="nom_entreprise"></h2>
@@ -30,6 +31,7 @@ $(()=>{
       <p id="d"></p>
     </div>
 
+    <h2 class="sous_titre">Plus d'information :</h2> 
     <p class="text-center" id="periode"></p>
 
     <br/><hr/><br/>
@@ -40,44 +42,19 @@ $(()=>{
         <button class="btn btn-primary">Mon site</button>
       </a>
     </div>
-    <br/><hr/><br/>
-
-    <h2 class="sous_titre">Modification du cursus</h2>
-    <div class="text-center">
-      <form method="post" action="/ListeEtudiants">
-        <input name="cursus" type="hidden" value="${Id_cursus}"/>
-        <button class="btn btn-success">Liste des Étudiants</button>
-      </form>
-    </div>
-
-    <br/><hr/><br/>
-      <div class="row">
-        <div class="col text-center">
-          <form method="post" action="/Cursus/edit">
-            <input name="id" type="hidden" value="${Id_cursus}"/>
-            <button type="submit" class="btn btn-success" id="editStage">Modifier</button>
-          </form>
-        </div>
-        <div class="col text-center">
-          <form action="/Cursus/suppression" method="post">
-            <input name="id" type="hidden" value=${Id_cursus} />
-            <button type="submit" class="btn btn-danger" id="supprim">Suprimer</button>
-          </form>
-        </div>
-      </div>
-    </div>
+    <br/>
     `);
 
-    leCursus(body);
+    leStage(body);
 })
 
-function leCursus(body) {
-  io_client.on("LeCursus", cursus => {
-    document.getElementById('titre').innerHTML = cursus.titre;
-    document.getElementById('nom_entreprise').innerHTML = cursus.etablissement;
-    document.getElementById('d').innerHTML = cursus.description;
-    document.getElementById('periode').innerHTML = cursus.periode;
-    var infos = JSON.parse(cursus.infos);
+function leStage(body) {
+  io_client.on("LeStage", stage => {
+    document.getElementById('titre').innerHTML = stage.titre;
+    document.getElementById('nom_entreprise').innerHTML = stage.entreprise;
+    document.getElementById('d').innerHTML = stage.description;
+    document.getElementById('periode').innerHTML = stage.periode;
+    var infos = JSON.parse(stage.infos);
     console.log(infos);
     for(info in infos){
       console.log(infos[info].type);

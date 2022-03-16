@@ -21,7 +21,7 @@ $(()=>{
     <nav class="navbar navbar-dark bg-dark box-shadow navbar-fixed-top sticky">
       <div class="container d-flex justify-content-between">
         <a href="/interface" class="navbar-brand d-flex align-items-center">
-          <strong>DIGISTAGE.RE</strong>
+          <h2><strong>DIGISTAGE.RE</strong></h2>
           </a>
         <a href="/VosCursus" class = "navbar-brand d-flex align-items-center">
           <h2>Cursus</h2>
@@ -29,8 +29,10 @@ $(()=>{
         <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
           <h2>Propositions</h2>
         </a>
-        <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
-        <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
+        <div class="navbar-brand d-flex align-items-center">
+          <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>
+          <a href="/login" class="btn btn-outline-secondary"><i class="bi-power" style="color: white;"></i></a>
+        </div>
       </div>
     </nav>
 

@@ -1,11 +1,10 @@
 var io_client = io();
 
-io_client.emit("EtudiantsPlease", Id_cursus);
+io_client.emit("StagePlease", token);
 
-let Etudiants = {};
+let Stages = {};
 
-$(() => {
-
+$(()=>{
   let body = $('body').append(`
     <nav class="navbar navbar-dark bg-dark box-shadow navbar-fixed-top sticky">
       <div class="container d-flex justify-content-between">
@@ -25,51 +24,46 @@ $(() => {
       </div>
     </nav>
 
-    <h1 class="text-center">Liste des étudiants</h1>
-
-    <div class="text-center">
-      <form method="post" action="/ListeEtudiants/NewEtudiant">
-        <input name="cursus" type="hidden" value="${Id_cursus}"/>
-        <button type="submit" class="btn btn-success">Ajouter</button>
-      </form>
-    </div><br/>
+    <h1 class="text-center">Proposition de stage</h1>
     `);
-    affichageDesCursus(body);
+    ajouterLesStages(body)
 })
-function affichageDesCursus(body) {
-  io_client.on("LesEtudiants", etudiant => {
-    Etudiants = etudiant;
+
+function ajouterLesStages(body) {
+  io_client.on("LesStages", stage => {
+    Stages = stage;
 
     let cardGroup = `
       <div class="container">
         <div class="row">
     `
-    for(etudiant in Etudiants) {
-      let card = newCardCursus(Etudiants[etudiant]);
+    for(stage in Stages) {
+      let card = newCardStage(Stages[stage]);
 
       cardGroup = cardGroup+card;
     }
 
     cardGroup = cardGroup+"</div></div>";
 
-
     body.append(cardGroup);
   })
 }
-function newCardCursus(etudiant) {
+
+function newCardStage(stage) {
   let card_html = `
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
     <div class="card" style="margin:2%">
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
-        <h5 class="card-title text-center">${etudiant.nom} ${etudiant.prenom}</h5>
-        <p class="card-text">${etudiant.cursus}</p>
-        <p class="card-text">${etudiant.etablissement}</p>
+        <h5 class="card-title text-center">${stage.titre}</h5>
+        <p class="card-text">${stage.entreprise}</p>
+        <p class="card-text">${stage.periode}</p>
+        <p class="card-text">${stage.motcle}</p>
       </div>
       <div class="card-footer">
 
-      <form method="post" action="/Compte">
-        <input name="etudiant" type="hidden" value="${etudiant.Id_etudiant}"/>
+      <form method="post" action="/Stage">
+        <input name="stage" type="hidden" value="${stage.Id_stage}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>

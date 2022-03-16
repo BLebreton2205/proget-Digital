@@ -649,9 +649,13 @@ app.post("/Stage", (req, res) => {
         tools.sendClientPage(res, "connected/etudiant/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
       }
       else if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise"){
-          var stage = req.body[stage];
-          tools.sendClientPage(res, "connected/entreprise/Stage", "Votre stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
-        }
+        var stage = req.body[stage];
+        tools.sendClientPage(res, "connected/entreprise/Stage", "Votre stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
+      }
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
+        var stage = req.body[stage];
+        tools.sendClientPage(res, "connected/etablissement/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
+      }
       else res.redirect("/login");
     }
 }else res.redirect("/login");
@@ -909,6 +913,7 @@ app.all("/StageDispo", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
