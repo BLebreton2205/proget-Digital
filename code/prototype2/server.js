@@ -947,34 +947,35 @@ app.all("/ListeEtudiants/NewEtudiant", (req, res) => {
 })
 
 app.all("/ListeEtudiants/AddEtudiant", (req, res) => {
-  /*console.log("Création de l'étudiant");
-  console.log(waiting_user);
-  let find = null;
-  let info = {};
-  for(let i=0; i<waiting_user.length; i++ ){
-    let desc = waiting_user[i];
-      if(desc.name == req.body.token){
-        console.log(waiting_user[i])
-      find = desc;
-      info = desc.info;
-    }
+  let mailOptions = {
+    from: 'baptiste.lebreton@esiroi.re',
+    to: req.body.mail,
+    subject: '[DigiStage] Création de votre compte',
+    text: `Bonjour ${req.body.nom} ${req.body.prenom},
+    Un compte sur notre site a été créé. Voici les Identifiants temporaires de votre compte.
+        - mail : ${req.body.mail} ;
+        - Mot de passe : ${req.body.newMdp}.
+    Rendez vous sur Digistage et accéder à votre compte pour pouvoir modifier ces informations.
+    `
   }
-  console.log(info);
-  if(find){*/
-    selectQuery = `INSERT INTO etudiants(Id_cursus, mail, mdp) VALUES (${req.body.cursus},'${req.body.mail}','${req.body.newMdp}')`;
-    pool.getConnection((err, connection) => {
-      if(err) throw err
-      console.log(`Connecté à l'id ${connection.threadId}`)
-      connection.query(selectQuery, (err, rows) => {
-          connection.release();
-          if(!err){
-              res.redirect("/ListeEtudiants");
-          } else console.log(err)
-      })
+  selectQuery = `INSERT INTO etudiants(Id_cursus, nom, prenom, mail, mdp) VALUES (${req.body.cursus},'${req.body.nom}','${req.body.prenom}','${req.body.mail}','${req.body.newMdp}')`;
+  pool.getConnection((err, connection) => {
+    if(err) throw err
+    console.log(`Connecté à l'id ${connection.threadId}`)
+    connection.query(selectQuery, (err, rows) => {
+        connection.release();
+        if(!err){
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email sent: ' + info.response);
+              res.redirect("/StageDispo");
+            }
+          });
+        } else console.log(err)
     })
-
-//  }
-
+  })
 })
 
 app.all("/VosStages", (req, res) => {

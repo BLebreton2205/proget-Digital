@@ -29,6 +29,14 @@ $(()=>{
 
         <h2 class="sous_titre">Identifiant</h2>
         <div class="form-group">
+          <label for="nom" id="medium">Nom : <FONT color=red>*</FONT></label>
+          <input type="text" class="form-control" name="nom" placeholder="Nom de l'élève" required>
+        </div><br/>
+        <div class="form-group">
+          <label for="prenom" id="medium">Prénom : <FONT color=red>*</FONT></label>
+          <input type="text" class="form-control" name="prenom" placeholder="Prénom de l'élève" required>
+        </div><br/>
+        <div class="form-group">
           <label for="email" id="medium">Email : <FONT color=red>*</FONT></label>
           <input type="email" class="form-control" name="mail" placeholder="Email" required>
         </div><br/>
