@@ -12,20 +12,25 @@ $(() => {
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
           </a>
-        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Propositions</h2>
+        <a href="/VosCursus" class = "navbar-brand d-flex align-items-center">
+          <h2>Cursus</h2>
         </a>
-        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Disponibilités</h2>
+        <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
+          <h2>Propositions</h2>
         </a>
         <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
         <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
       </div>
     </nav>
 
-    <h1 class="text-center">Les périodes de stages des Cursus</h1>
+    <h1 class="text-center">Liste des étudiants</h1>
 
-    <br/>
+    <div class="text-center">
+      <form method="post" action="/ListeEtudiants/NewEtudiant">
+        <input name="cursus" type="hidden" value="${Id_cursus}"/>
+        <button type="submit" class="btn btn-success">Ajouter</button>
+      </form>
+    </div><br/>
     `);
     affichageDesCursus(body);
 })

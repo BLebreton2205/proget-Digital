@@ -936,6 +936,47 @@ app.all("/ListeEtudiants", (req, res) => {
 
 })
 
+app.all("/ListeEtudiants/NewEtudiant", (req, res) => {
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/AddEtudiant", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
+      else res.redirect("/login");
+    }
+  }else res.redirect("/login");
+
+})
+
+app.all("/ListeEtudiants/AddEtudiant", (req, res) => {
+  /*console.log("Création de l'étudiant");
+  console.log(waiting_user);
+  let find = null;
+  let info = {};
+  for(let i=0; i<waiting_user.length; i++ ){
+    let desc = waiting_user[i];
+      if(desc.name == req.body.token){
+        console.log(waiting_user[i])
+      find = desc;
+      info = desc.info;
+    }
+  }
+  console.log(info);
+  if(find){*/
+    selectQuery = `INSERT INTO etudiants(Id_cursus, mail, mdp) VALUES (${req.body.cursus},'${req.body.mail}','${req.body.newMdp}')`;
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+      connection.query(selectQuery, (err, rows) => {
+          connection.release();
+          if(!err){
+              res.redirect("/ListeEtudiants");
+          } else console.log(err)
+      })
+    })
+
+//  }
+
+})
+
 app.all("/VosStages", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
