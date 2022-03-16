@@ -11,8 +11,10 @@ $(()=>{
         <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
           <h2>Propositions</h2>
         </a>
-        <a href="/Compte" class="btn btn-outline-secondary navbar-brand">Mon Compte</a>
-        <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
+        <div class="navbar-brand d-flex align-items-center">
+          <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>
+          <a href="/login" class="btn btn-outline-secondary"><i class="bi-power" style="color: white;"></i></a>
+        </div>
       </div>
     </nav>
 
