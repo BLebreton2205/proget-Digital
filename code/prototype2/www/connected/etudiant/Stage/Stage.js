@@ -10,7 +10,7 @@ $(()=>{
           <strong>DIGISTAGE.RE</strong>
           </a>
         <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Proposition</h2>
+          <h2>Stages</h2>
         </a>
         <div class="navbar-brand d-flex align-items-center">
           <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>

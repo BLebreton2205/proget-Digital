@@ -27,7 +27,7 @@ $(()=>{
           <h2>Cursus</h2>
         </a>
         <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Propositions</h2>
+          <h2>Stages</h2>
         </a>
         <div class="navbar-brand d-flex align-items-center">
           <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>
@@ -89,6 +89,7 @@ $(()=>{
         <div class="form-group">
           <label for="site" id="medium">Site Internet :</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-globe2" style="color: black;"></i></span>
             <input type="url" class="form-control" id="siteweb" placeholder="Ajouter ou modifier votre lien">
             <button class="btn btn-outline-secondary"id="del_web" type="button">Supprimer</button>
           </div>
@@ -96,6 +97,7 @@ $(()=>{
         <div class="form-group">
           <label for="site" id="medium">LinkedIn :</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-linkedin" style="color: black;"></i></span>
             <input type="url" class="form-control" id="linkedin" placeholder="Ajouter ou modifier votre lien">
             <button class="btn btn-outline-secondary" id="del_lkd" type="button">Supprimer</button>
           </div>
@@ -103,6 +105,7 @@ $(()=>{
         <div class="form-group">
           <label for="twitter" id="medium">Twitter :</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-twitter" style="color: black;"></i></span>
             <input type="url" class="form-control" id="twitter" placeholder="Ajouter ou modifier votre lien">
             <button class="btn btn-outline-secondary" id="del_tw" type="button">Supprimer</button>
           </div>
@@ -110,13 +113,11 @@ $(()=>{
         <div class="form-group">
           <label for="fb">Facebook : </label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-facebook" style="color: black;"></i></span>
             <input type="url" class="form-control" id="facebook" placeholder="Ajouter ou modifier">
             <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
           </div>
         </div><br/>
-        <div class="col text-center">
-          <button id="change_lien" type="submit" class="btn btn-success">Modifier</button>
-        </div>
       </form>
     </div>
     <br/><hr/><br/>

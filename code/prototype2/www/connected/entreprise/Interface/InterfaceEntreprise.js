@@ -9,7 +9,7 @@ $(()=>{
           <strong>DIGISTAGE.RE</strong>
           </a>
         <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Propositions</h2>
+          <h2>Stages</h2>
         </a>
         <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
           <h2>Disponibilités</h2>

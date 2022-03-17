@@ -268,7 +268,7 @@ io_server.on("connection", socket_client => {
         }
       }
       if(find){
-        var selectQuery = `SELECT Id_cursus, titre, nom FROM etablissement, cursus WHERE mail='${info.mail}' AND cursus.Id_ecole=etablissement.Id_ecole`;
+        var selectQuery = `SELECT Id_cursus, titre, nom, periode FROM etablissement, cursus WHERE mail='${info.mail}' AND cursus.Id_ecole=etablissement.Id_ecole`;
         console.log(selectQuery)
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -282,7 +282,8 @@ io_server.on("connection", socket_client => {
                 Cursus["cur"+nb] = {
                   'Id_cursus' : rows[nb-1].Id_cursus,
                   'titre': rows[nb-1].titre,
-                  'entreprise': rows[nb-1].nom
+                  'etablissement': rows[nb-1].nom,
+                  'periode': rows[nb-1].periode
                 };
               }
               console.log(Cursus)

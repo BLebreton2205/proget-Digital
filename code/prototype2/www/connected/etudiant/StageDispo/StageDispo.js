@@ -12,7 +12,7 @@ $(()=>{
           <strong>DIGISTAGE.RE</strong>
           </a>
         <a href="/StageDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Proposition</h2>
+          <h2>Stages</h2>
         </a>
         <div class="navbar-brand d-flex align-items-center">
           <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>
@@ -53,9 +53,9 @@ function newCardStage(stage) {
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
         <h5 class="card-title text-center">${stage.titre}</h5>
-        <p class="card-text">${stage.entreprise}</p>
-        <p class="card-text">${stage.periode}</p>
-        <p class="card-text">${stage.motcle}</p>
+        <p class="card-text"><span><i class="bi bi-building" style="font-size: 1.5rem; color: black;"></i></span> ${stage.entreprise}</p>
+        <p class="card-text"><span><i class="bi bi-calendar-date" style="font-size: 1.5rem; ccolor: black;"></i></span> ${stage.periode}</p>
+        <p class="card-text"><span><i class="bi bi-tags" style="font-size: 1.5rem; ccolor: black;"></i></span> ${stage.motcle}</p>
       </div>
       <div class="card-footer">
 
