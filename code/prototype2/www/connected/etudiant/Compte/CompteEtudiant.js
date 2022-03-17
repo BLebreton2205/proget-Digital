@@ -13,8 +13,7 @@ let valeur_info = {
   twitter: '',
   facebook: '',
   github: '',
-  gitlab: '',
-  sof: ''
+  gitlab: ''
 }
 
 io_client.emit("InfoPlease", token); // on informe le serveur de son identité sur le canal websocket
@@ -156,17 +155,17 @@ $(()=>{
         </div>
       </div><br/>
       <div class="form-group">
-        <label for="gitlab" id="medium">Github :</label>
+        <label for="gitlab" id="medium">GitLab :</label>
         <div class="input-group">
           <input type="url" class="form-control" id="gitlab" placeholder="Ajouter ou modifier">
-          <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
+          <button class="btn btn-outline-secondary" id="del_gitlab" type="button">Supprimer</button>
         </div>
       </div><br/>
       <div class="form-group">
-        <label for="github" id="medium">GitLab :</label>
+        <label for="github" id="medium">Github :</label>
         <div class="input-group">
           <input type="url" class="form-control" id="github" placeholder="Ajouter ou modifier">
-          <button class="btn btn-outline-secondary" id="del_fb" type="button">Supprimer</button>
+          <button class="btn btn-outline-secondary" id="del_github" type="button">Supprimer</button>
         </div>
       </div><br/>
       <div class="col text-center">
@@ -209,6 +208,42 @@ $(()=>{
     io_client.emit("del_cv", old_cv, valeur_info);
   });
 
+  $( "#del_web" ).click(function() {
+    document.getElementById("siteweb").value = "";
+    valeur_info.siteweb = "";
+    io_emit("del_lien", valeur_info, "siteweb")
+  });
+
+  $( "#del_lkd" ).click(function() {
+    document.getElementById("linkedin").value = "";
+    valeur_info.linkedin = "";
+    io_emit("del_lien", valeur_info, "linkedin")
+  });
+
+  $( "#del_tw" ).click(function() {
+    document.getElementById("twitter").value = "";
+    valeur_info.twitter = "";
+    io_emit("del_lien", valeur_info, "twitter")
+  });
+
+  $( "#del_fb" ).click(function() {
+    document.getElementById("facebook").value = "";
+    valeur_info.facebook = "";
+    io_emit("del_lien", valeur_info, "facebook")
+  });
+
+  $( "#del_gitlab" ).click(function() {
+    document.getElementById("gitlab").value = "";
+    valeur_info.gitlab = "";
+    io_emit("del_lien", valeur_info, "gitlab")
+  });
+
+  $( "#del_github" ).click(function() {
+    document.getElementById("github").value = "";
+    valeur_info.github = "";
+    io_emit("del_lien", valeur_info, "github")
+  });
+
   $( "#change_lien" ).click(function() {
     changeLien(valeur_info);
   });
@@ -227,20 +262,19 @@ $(()=>{
               document.getElementById("genre_select").value = valeur_info[arg];
             break
             /*case "cv":
-              console.log(arg)
-              console.log(valeur_info[arg])
-              document.getElementById(arg).value = valeur_info[arg];*/
-
+            console.log(msg[arg]);*/
             case "type":
               break
             default:
               console.log(arg)
               console.log(valeur_info[arg])
               document.getElementById(arg).value = valeur_info[arg];
+
               break
           }
         };
       }
+      console.log(valeur_info)
     })
   }
 

@@ -31,7 +31,7 @@ $(()=>{
       <p id="d"></p>
     </div>
 
-    <h2 class="sous_titre">Plus d'information :</h2> 
+    <h2 class="sous_titre">Période de stage :</h2> 
     <p class="text-center" id="periode"></p>
 
     <br/><hr/><br/>

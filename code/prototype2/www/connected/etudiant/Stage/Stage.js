@@ -18,30 +18,27 @@ $(()=>{
         </div>
       </div>
     </nav>
-    `);
 
-    leStage(body);
-})
-
-function leStage(body) {
-  io_client.on("LeStage", stage => {
-    let cardGroup = `
-    <h1 class="text-center">${stage.titre}</h1>
-    <h2 class="text-center sous_titre_Stage">${stage.entreprise}</h2>
-
-    <h2 class=sous_titre>Description :</h2>
+    <div class="container-fluid">
+    <h1 class="text-center" id="titre"></h1>
+    <h2 class="text-center sous_titre_Stage" id="nom_entreprise"></h2>
+    <h2 class="sous_titre">Description :</h2>
     <div class="container">
-      <p id="d">${stage.description}</p>
+      <p id="d"></p>
     </div>
+
+    <h2 class="sous_titre">Période de stage :</h2>
+    <p class="text-center" id="periode"></p>
 
     <br/><hr/><br/>
 
     <h2 class="sous_titre">Plus d'information :</h2>
     <div class="text-center">
-      <a href="http://www.google.com">
-        <button class="btn btn-success">Mon site</button>
+      <a href="" id="lien">
+        <button class="btn btn-primary">Mon site</button>
       </a>
     </div>
+    <br/>
 
     <br/><hr/><br/>
 
@@ -72,6 +69,7 @@ function leStage(body) {
                 <input class="form-control" type="file" name="CoverLetter" accept=".pdf"/>
                 <p class="text-center verySmallText">Le fichier doit être un PDF</p>
                 <input name="Id_stage" type="hidden" value=${Id_stage} />
+                <input name="token" type="hidden" value=${token} />
               </div>
             </form>
 
@@ -83,8 +81,23 @@ function leStage(body) {
         </div><!-- Modal-Content -->
       </div> <!-- Modal-Dialog -->
     </div>
-    `
+    <br/>
+    `);
 
-    body.append(cardGroup);
+    leStage(body);
+})
+
+function leStage(body) {
+  io_client.on("LeStage", stage => {
+    document.getElementById('titre').innerHTML = stage.titre;
+    document.getElementById('nom_entreprise').innerHTML = stage.entreprise;
+    document.getElementById('d').innerHTML = stage.description;
+    document.getElementById('periode').innerHTML = stage.periode;
+    var infos = JSON.parse(stage.infos);
+    console.log(infos);
+    for(info in infos){
+      console.log(infos[info].type);
+      if(infos[info].type == "lien") document.getElementById('lien').href = infos[info].info;
+    }
   })
 }

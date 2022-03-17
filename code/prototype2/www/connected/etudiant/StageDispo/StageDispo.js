@@ -40,7 +40,7 @@ function ajouterLesStages(body) {
       cardGroup = cardGroup+card;
     }
 
-    cardGroup = cardGroup+"</div></div>";
+    cardGroup = cardGroup+"</div></div><br/>";
 
     body.append(cardGroup);
   })

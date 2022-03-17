@@ -20,13 +20,17 @@ $(()=>{
 
     <h1 class="text-center">Interface Étudiant</h1>
 
-    <img href="/StageDispo" id="dispo" src="../img/carnet.png" alt="logo_carnet" width="150" height="150" class="mx-auto d-block">
-    <a class="text-decoration-none" href="/StageDispo"> <h2 id= "dispo" class="text-center" style= "color : black">Proposition de Stage</h2> </a>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <a class="text-decoration-none" href="/StageDispo">
+            <img href="/StageDispo" id="dispo" src="../img/carnet.png" alt="logo_carnet" width="150" height="150" class="mx-auto d-block">
+            <h2 id= "dispo" class="text-center" style= "color : black">Proposition de Stage</h2>
+          </a>
+        </div>
+      </div>
+    </div>
 
     `);
-
-    $( "#dispo" ).click(function() {
-      alert( "Cliquez" );
-    });
 
 })
