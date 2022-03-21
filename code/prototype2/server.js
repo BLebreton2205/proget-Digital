@@ -298,7 +298,7 @@ io_server.on("connection", socket_client => {
     socket_client.on("InfoStagePlease", (stage) => {
       //console.log(stage);
       if(stage){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT Id_stage, titre, nom, periode, motcle, stage.description, infos FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
+        var selectQuery = `SELECT Id_stage, stage.Id_entreprise AS id, titre, nom, periode, motcle, stage.description, infos FROM stage, entreprise WHERE Id_stage = '${stage}' AND stage.Id_entreprise=entreprise.Id_entreprise`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -308,6 +308,7 @@ io_server.on("connection", socket_client => {
           //console.log("okey")
               var Result = {
                 'Id_stage' : rows[0].Id_stage,
+                'Id_entreprise' : rows[0].id,
                 'titre': rows[0].titre,
                 'entreprise': rows[0].nom,
                 'periode': rows[0].periode,
@@ -315,6 +316,7 @@ io_server.on("connection", socket_client => {
                 'description': rows[0].description,
                 'infos': rows[0].infos
               };
+              console.log(Result)
 
               connection.release()    // return the connection to pool
               if(!err){
@@ -396,6 +398,40 @@ io_server.on("connection", socket_client => {
               if(!err){
               //  console.log(Result)
                 io_server.emit("Etudiant", Result)
+              } else {
+                  console.log(err+"1")
+              }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    })
+
+    socket_client.on("InfoEntreprisePlease", (entreprise) => {
+      if(entreprise){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT nom, description, siteweb, linkedin, twitter, facebook FROM entreprise WHERE Id_entreprise = ${entreprise}`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+              var Result = {
+                'nom': rows[0].nom,
+                'description': rows[0].description,
+                'siteweb': rows[0].siteweb,
+                'linkedin': rows[0].linkedin,
+                'twitter': rows[0].twitter,
+                'facebook': rows[0].facebook
+              };
+
+              connection.release()    // return the connection to pool
+              if(!err){
+              //  console.log(Result)
+                io_server.emit("Entreprise", Result)
               } else {
                   console.log(err+"1")
               }
@@ -1118,8 +1154,13 @@ app.all("/Compte", (req, res) => {
   console.log("\n========== Compte ==========")
   if (req.cookies){
     for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = '"+cookie+"';"]);
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise"){
+      if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants"){
+        if(req.body.entreprise){
+          tools.sendClientPage(res, "connected/etudiant/CompteEntreprise", "Compte entreprise| DigiStage", true, ["token = '"+cookie+"';", "Id_entreprise = "+req.body.entreprise]);
+        } else {
+          tools.sendClientPage(res, "connected/etudiant/Compte", "Compte | DigiStage", true, ["token = '"+cookie+"';"]);
+        }
+      }else if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise"){
         if(req.body.etudiant){
           tools.sendClientPage(res, "connected/entreprise/CompteEtudiant", "Compte étudiant | DigiStage", true, ["token = '"+cookie+"';", "Id_etudiant = "+req.body.etudiant]);
         }else {
@@ -1129,6 +1170,8 @@ app.all("/Compte", (req, res) => {
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
         if(req.body.etudiant){
           tools.sendClientPage(res, "connected/etablissement/CompteEtudiant", "Compte étudiant | DigiStage", true, ["token = '"+cookie+"';", "Id_etudiant = "+req.body.etudiant]);
+        } else if(req.body.entreprise) {
+          tools.sendClientPage(res, "connected/etablissement/CompteEntreprise", "Compte entreprise | DigiStage", true, ["token = '"+cookie+"';", "Id_entreprise = "+req.body.entreprise]);
         }else {
           tools.sendClientPage(res, "connected/etablissement/Compte", "Votre compte | DigiStage", true, ["token = '"+cookie+"';"]);
         }

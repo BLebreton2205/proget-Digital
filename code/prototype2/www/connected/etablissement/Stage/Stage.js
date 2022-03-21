@@ -25,7 +25,14 @@ $(()=>{
 
     <div class="container-fluid">
     <h1 class="text-center" id="titre"></h1>
-    <h2 class="text-center sous_titre_Stage" id="nom_entreprise"></h2>
+    <form method='POST' action='/Compte'>
+      <input name="entreprise" id="id_entreprise" type="hidden" value=""/>
+      <div class="text-center">
+        <button type="submit" class="text-center" style="all:unset">
+          <h2 class="sous_titre_Stage" id="nom_entreprise"></h2>
+        </button>
+      </div>
+    </form>
     <h2 class="sous_titre">Description :</h2>
     <div class="container">
       <p id="d"></p>
@@ -51,6 +58,7 @@ $(()=>{
 function leStage(body) {
   io_client.on("LeStage", stage => {
     document.getElementById('titre').innerHTML = stage.titre;
+    document.getElementById('id_entreprise').value = stage.Id_entreprise;
     document.getElementById('nom_entreprise').innerHTML = stage.entreprise;
     document.getElementById('d').innerHTML = stage.description;
     document.getElementById('periode').innerHTML = stage.periode;
