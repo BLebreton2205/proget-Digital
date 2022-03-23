@@ -598,6 +598,7 @@ io_server.on("connection", socket_client => {
       }
       if(find){ //on a bien trouver une corrspondance
         var selectQuery = `SELECT * FROM ${info.type} WHERE mail = '${info.mail}'`;
+        console.log(selectQuery)
         pool.getConnection((err, connection) => {
           if(err) throw err
           console.log(`Connecté à l'id ${connection.threadId}`)
@@ -870,8 +871,8 @@ app.all("/Connect", (req, res) => {
           if(Result) {
             console.log("         Send Page - Administrateur");
             userData.id = Result['Id_admin'];
-            userData.type = "admin";
-            name_cookie = "admin-"+Math.floor(Math.random() * 1000);
+            userData.type = "administrateur";
+            name_cookie = "administrateur-"+Math.floor(Math.random() * 1000);
             i = 0;
             while (i < waiting_user.length){
               if (waiting_user[i] == name_cookie){
@@ -911,7 +912,7 @@ app.all("/interface", (req, res) => {
       if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -934,7 +935,7 @@ app.post("/Stage", (req, res) => {
         var stage = req.body[stage];
         tools.sendClientPage(res, "connected/etablissement/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
       }
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin"){
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
         var stage = req.body[stage];
         tools.sendClientPage(res, "connected/admin/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
       }
@@ -953,7 +954,7 @@ app.post("/Cursus", (req, res) => {
       } else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
         tools.sendClientPage(res, "connected/etablissement/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
       }
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin"){
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
         tools.sendClientPage(res, "connected/admin/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
       }
       else res.redirect("/login");
@@ -1225,7 +1226,7 @@ app.all("/StageDispo", (req, res) => {
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/StageDispo", "Liste des stages | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/StageDispo", "Liste des stages | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -1237,7 +1238,7 @@ app.all("/PromoDispo", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/PromoDispo", "Disponibilité des cursus | DigiStage", true, ["token = '"+cookie+"';"]);
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/PromoDispo", "Liste des cursus | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/PromoDispo", "Liste des cursus | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -1248,7 +1249,7 @@ app.all("/ListeEntreprise", (req, res) => {
   console.log("\n========== Liste des entreprises ==========")
   if (req.cookies){
     for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';"]);
+      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -1259,7 +1260,7 @@ app.all("/ListeEtablissement", (req, res) => {
   console.log("\n========== Liste des etablissements ==========")
   if (req.cookies){
     for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';"]);
+      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -1272,7 +1273,7 @@ app.all("/ListeEtudiants", (req, res) => {
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
@@ -1388,7 +1389,7 @@ app.all("/Compte", (req, res) => {
           tools.sendClientPage(res, "connected/etablissement/Compte", "Votre compte | DigiStage", true, ["token = '"+cookie+"';"]);
         }
       }
-      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin"){
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
         if(req.body.etudiant){
           tools.sendClientPage(res, "connected/admin/CompteEtudiant", "Compte étudiant | DigiStage", true, ["token = '"+cookie+"';", "Id_etudiant = "+req.body.etudiant]);
         } else if(req.body.entreprise){

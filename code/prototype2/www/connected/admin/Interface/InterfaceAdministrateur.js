@@ -1,5 +1,7 @@
 var io_client = io();
 
+io_client.emit("attenteNewCompte", token); // on informe le serveur de son identité sur le canal websocket
+
 $(()=>{
 
   let body = $('body').append(`
@@ -7,13 +9,7 @@ $(()=>{
       <div class="container d-flex justify-content-between">
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
-          </a>
-        <!-- <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Stages</h2>
         </a>
-        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Disponibilités</h2>
-        </a> -->
         <div class="navbar-brand d-flex align-items-center">
           <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>
           <a href="/login" class="btn btn-outline-secondary"><i class="bi-power" style="color: white;"></i></a>
@@ -31,13 +27,13 @@ $(()=>{
             <h2 id= "dispo" class="text-center" style= "color : black">Les étudiants</h2>
           </a>
         </div>
-        <div class="col">
+        <div name="notifEntreprise" class="col" style="position: relative">
           <a class="text-decoration-none" href="/ListeEntreprise">
             <img href="/ListeEntreprise" id="dispo" src="../img/entreprise.png" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les entreprises</h2>
           </a>
         </div>
-        <div class="col">
+        <div name="notifEtablissement" class="col" style="position: relative">
           <a class="text-decoration-none" href="/ListeEtablissement">
             <img href="/ListeEtablissement" id="dispo" src="../img/etablissement.png" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les établissements</h2>
@@ -63,4 +59,15 @@ $(()=>{
 
     `)
 
+    setNotif();
+
 })
+
+function setNotif() {
+  io_client.on("setNotif", msg =>{
+    if(msg){
+      document.getElementsByName("notifEntreprise").innerHTML = '<div class="notif d-flex justify-content-center align-items-center"><span class="number">5</span></div>';
+      document.getElementsByName("notifEtablissement").innerHTML = '<div class="notif d-flex justify-content-center align-items-center"><span class="number">5</span></div>';
+    }
+  })
+}

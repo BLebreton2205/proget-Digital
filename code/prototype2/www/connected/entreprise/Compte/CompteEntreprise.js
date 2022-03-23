@@ -210,6 +210,7 @@ $(()=>{
 
     function changeInfo(valeur_info) {
       valeur_info.nom = document.getElementById("nom").value;
+      valeur_info.maol = document.getElementById("mail").value;
       if(!hide) valeur_info.description = document.getElementById("descriptionEdit").value;
       io_client.emit("modifie", valeur_info);
     }
