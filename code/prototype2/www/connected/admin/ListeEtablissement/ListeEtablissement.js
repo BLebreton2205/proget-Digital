@@ -1,8 +1,8 @@
 var io_client = io();
 
-io_client.emit("EntreprisesPlease");
+io_client.emit("EtablissementsPlease");
 
-let Entreprises = {};
+let Etablissements = {};
 
 $(() => {
 
@@ -19,22 +19,22 @@ $(() => {
       </div>
     </nav>
 
-    <h1 class="text-center">Les entreprises du site</h1>
+    <h1 class="text-center">Les établissements du site</h1>
 
     <br/>
     `);
-    affichageDesEntreprises(body);
+    affichageDesEtablissements(body);
 })
-function affichageDesEntreprises(body) {
-  io_client.on("LesEntreprises", entreprise => {
-    Entreprises = entreprise;
+function affichageDesEtablissements(body) {
+  io_client.on("LesEtablissements", etablissement => {
+    Etablissements = etablissement;
 
     let cardGroup = `
       <div class="container">
         <div class="row">
     `
-    for(entreprise in Entreprises) {
-      let card = newCardEntreprise(Entreprises[entreprise]);
+    for(etablissement in Etablissements) {
+      let card = newCardEtablissement(Etablissements[etablissement]);
 
       cardGroup = cardGroup+card;
     }
@@ -45,18 +45,18 @@ function affichageDesEntreprises(body) {
     body.append(cardGroup);
   })
 }
-function newCardEntreprise(entreprise) {
+function newCardEtablissement(etablissement) {
   let card_html = `
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
     <div class="card" style="margin:2%">
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
-        <h5 class="card-title text-center">${entreprise.nom}</h5>
+        <h5 class="card-title text-center">${etablissement.nom}</h5>
       </div>
       <div class="card-footer">
 
       <form method="post" action="/Compte">
-        <input name="entreprise" type="hidden" value="${entreprise.Id_entreprise}"/>
+        <input name="etablissement" type="hidden" value="${etablissement.Id_ecole}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>

@@ -300,6 +300,32 @@ io_server.on("connection", socket_client => {
         })
     })
 
+      socket_client.on("EtablissementsPlease", (Id_cursus) => {
+        var selectQuery = 'SELECT `Id_ecole`, nom FROM `etablissement` WHERE 1';
+          console.log(selectQuery)
+          pool.getConnection((err, connection) => {
+            if(err) throw err
+            console.log(`Connecté à l'id ${connection.threadId}`)
+            connection.query(selectQuery, (err, rows) => {
+              console.log(err)
+                connection.release();
+                let Etablissements = {};
+                let nb = 0;
+                for( let etablissement in rows ){
+                  nb++
+                  Etablissements["etablissement"+nb] = {
+                    'Id_ecole' : rows[nb-1].Id_ecole,
+                    'nom': rows[nb-1].nom
+                  };
+                }
+                console.log(Etablissements)
+                if(!err){
+                  io_server.emit("LesEtablissements", Etablissements)
+                }
+            })
+          })
+      })
+
     socket_client.on("MesStages", token => {
       let find = null; //contiendra le descripteur trouve
       let info = {};
@@ -1210,6 +1236,28 @@ app.all("/PromoDispo", (req, res) => {
 
 })
 
+app.all("/ListeEntreprise", (req, res) => {
+  console.log("\n========== Liste des entreprises ==========")
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';"]);
+      else res.redirect("/login");
+    }
+  }else res.redirect("/login");
+
+})
+
+app.all("/ListeEtablissement", (req, res) => {
+  console.log("\n========== Liste des etablissements ==========")
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';"]);
+      else res.redirect("/login");
+    }
+  }else res.redirect("/login");
+
+})
+
 app.all("/ListeEtudiants", (req, res) => {
   console.log("\n========== Liste des étudiants ==========")
   if (req.cookies){
@@ -1217,17 +1265,6 @@ app.all("/ListeEtudiants", (req, res) => {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';", " Id_cursus = "+req.body.cursus]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEtudiants", "Liste des étudiants | DigiStage", true, ["token = '"+cookie+"';"]);
-      else res.redirect("/login");
-    }
-  }else res.redirect("/login");
-
-})
-
-app.all("/ListeEntreprise", (req, res) => {
-  console.log("\n========== Liste des entreprises ==========")
-  if (req.cookies){
-    for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
