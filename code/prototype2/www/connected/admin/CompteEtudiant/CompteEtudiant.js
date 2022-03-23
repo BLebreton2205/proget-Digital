@@ -8,12 +8,6 @@ $(()=>{
       <div class="container d-flex justify-content-between">
         <a href="/interface" class="navbar-brand d-flex align-items-center">
           <strong>DIGISTAGE.RE</strong>
-          </a>
-        <a href="/VosStages" class = "navbar-brand d-flex align-items-center">
-          <h2>Stages</h2>
-        </a>
-        <a href="/PromoDispo" class = "navbar-brand d-flex align-items-center">
-          <h2>Disponibilités</h2>
         </a>
         <div class="navbar-brand d-flex align-items-center">
           <a href="/Compte" class="btn btn-outline-secondary" style="color:white"><strong>Mon Compte</strong></a>

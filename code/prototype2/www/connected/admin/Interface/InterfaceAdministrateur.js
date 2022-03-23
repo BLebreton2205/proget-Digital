@@ -32,13 +32,13 @@ $(()=>{
           </a>
         </div>
         <div class="col">
-          <a class="text-decoration-none">
+          <a class="text-decoration-none" href="/ListeEntreprise">
             <img href="/PromoDispo" id="dispo" src="../img/entreprise.png" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les entreprises</h2>
           </a>
         </div>
         <div class="col">
-          <a class="text-decoration-none" >
+          <a class="text-decoration-none" href="/ListeEtablissement">
             <img href="/PromoDispo" id="dispo" src="../img/etablissement.png" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les établissements</h2>
           </a>
