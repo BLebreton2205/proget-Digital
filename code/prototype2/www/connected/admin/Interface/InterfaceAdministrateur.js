@@ -27,7 +27,7 @@ $(()=>{
             <h2 id= "dispo" class="text-center" style= "color : black">Les étudiants</h2>
           </a>
         </div>
-        <div name="notifEntreprise" class="col" style="position: relative">
+        <div id="test" name="notifEntreprise" class="col" style="position: relative">
           <a class="text-decoration-none" href="/ListeEntreprise">
             <img href="/ListeEntreprise" id="dispo" src="../img/entreprise.png" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les entreprises</h2>
@@ -64,10 +64,15 @@ $(()=>{
 })
 
 function setNotif() {
-  io_client.on("setNotif", msg =>{
-    if(msg){
-      document.getElementsByName("notifEntreprise").innerHTML = '<div class="notif d-flex justify-content-center align-items-center"><span class="number">5</span></div>';
-      document.getElementsByName("notifEtablissement").innerHTML = '<div class="notif d-flex justify-content-center align-items-center"><span class="number">5</span></div>';
+  console.log(document.getElementsByName("notifEntreprise"))
+  io_client.on("setNotif", notif =>{
+    console.log(notif.nbEntreprise)
+    if(notif.nbEntreprise){
+      $('[name="notifEntreprise"]').append('<div class="notif d-flex justify-content-center align-items-center"><span class="number">'+notif.nbEntreprise+'</span></div>')
+      console.log(notif.nbEntreprise)
+    }
+    if(notif.nbEtablissement){
+      $('[name="notifEtablissement"]').append('<div class="notif d-flex justify-content-center align-items-center"><span class="number">'+notif.nbEtablissement+'</span></div>');
     }
   })
 }

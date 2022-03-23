@@ -1,17 +1,16 @@
 $(() => {
 
   let body = $('body').append(`
-      <header>
-        <div class="navbar navbar-dark bg-dark box-shadow">
-          <div class="container d-flex justify-content-between">
-            <a class="navbar-brand d-flex align-items-center">
-              <strong>DIGISTAGE.RE</strong>
-            </a>
-            <a href="/login" class="btn btn-outline-secondary navbar-brand"><i class="bi-power"></i></a>
-            </button>
-          </div>
+    <nav class="navbar navbar-dark bg-dark box-shadow navbar-fixed-top sticky">
+      <div class="container d-flex justify-content-between">
+        <a href="/interface" class="navbar-brand d-flex align-items-center">
+          <strong>DIGISTAGE.RE</strong>
+        </a>
+        <div class="navbar-brand d-flex align-items-center">
+          <a href="/login" class="btn btn-outline-secondary"><i class="bi-power" style="color: white;"></i></a>
         </div>
-      </header>
+      </div>
+    </nav>
       <br/>
       <div class="container">
       <div class="row">
@@ -50,10 +49,10 @@ $(() => {
           <div class="card">
             <article class="card-body">
               <h2 class="card-title mb-4 mt-1 text-center">Créer un compte :</h2>
-              <form>
+              <form method='post' action='/signup'>
               <div class="form-group">
                 <label for="type-selector" id="medium">Êtes-vous :</label><br/>
-                <select class="form-select" name="genre" id="type_creer">
+                <select class="form-select" name="type" id="type_creer">
                   <option value="entreprise">Entreprise</option>
                   <option value="etablissement">Établissement</option>
                 </select>

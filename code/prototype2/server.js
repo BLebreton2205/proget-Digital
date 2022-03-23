@@ -190,6 +190,30 @@ io_server.on("connection", socket_client => {
       })
     })
 
+    socket_client.on("attenteNewCompte", token => {
+        var selectQuery = `SELECT SUM(typeEntreprise) AS nbEntreprise, SUM(typeEtablissement) AS nbEtablissement FROM demandecompte WHERE 1`;
+        console.log(selectQuery)
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+            var Result;
+            connection.release()    // return the connection to pool
+            if(!err){
+              Result = {
+                nbEntreprise: rows[0].nbEntreprise,
+                nbEtablissement: rows[0].nbEtablissement
+              }
+              console.log(Result)
+              io_server.emit("setNotif", Result)
+            } else {
+                console.log(err+"1")
+            }
+          })
+        });
+    })
+
     socket_client.on("CursusPlease", () => {
       console.log('Hey oh !')
       var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole ORDER BY titre';
@@ -748,7 +772,8 @@ function URItoArg(url){
 
 /*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
 /*region*/
-app.all(["/login"], (req, res) => {
+app.all("/login", (req, res) => {
+  console.log("\n========== Login ==========");
   for(cookie in req.cookies) {
     waiting_user.splice(waiting_user.indexOf(cookie), 1);
     console.log(cookie + " effacer !")
@@ -756,8 +781,40 @@ app.all(["/login"], (req, res) => {
   }
   let arg_get = URItoArg(req.url);
   //console.log(req.url)
-  if(arg_get) tools.sendClientPage(res, "public", "Se connecter | DigiStage", false, null, arg_get);
-  else tools.sendClientPage(res, "public", "Se connecter | DigiStage");
+  if(arg_get) tools.sendClientPage(res, "public/login", "Se connecter | DigiStage", false, null, arg_get);
+  else tools.sendClientPage(res, "public/login", "Se connecter | DigiStage");
+})
+
+app.all("/signup", (req, res) => {
+  console.log("\n========== Signup ==========");
+  console.log(req.body)
+  switch (req.body.type) {
+    case "entreprise":
+      tools.sendClientPage(res, "public/NewCompteEntreprise", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
+      break;
+    case "etablissement":
+      tools.sendClientPage(res, "public/NewCompteEtablissement", "Créer un compte | DigiStage");
+      break;
+  }
+})
+
+app.all("/signup/NewDemande", (req, res) => {
+  console.log("\n========== Nouvelle demande ==========");
+  console.log(req.body)
+  console.log(`Nouvelle demande ${req.body.type}`);
+  selectQuery = `INSERT INTO demandecompte (type, nom, mail, mdp) VALUES ("${req.body.type}", "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
+  console.log(selectQuery)
+  pool.getConnection((err, connection) => {
+    if(err) throw err
+    console.log(`Connecté à l'id ${connection.threadId}`)
+
+    connection.query(selectQuery, (err, rows) => {
+      var Result = rows[0];
+      connection.release()
+      console.log(Result)
+      res.redirect("/login")
+    })
+  });
 })
 
 app.all("/Connect", (req, res) => {
