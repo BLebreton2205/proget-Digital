@@ -26,7 +26,7 @@ $(()=>{
     <div class="container">
       <div class="row">
         <div class="col">
-          <a class="text-decoration-none" >
+          <a class="text-decoration-none" href="/ListeEtudiants">
             <img href="/VosStages" id="dispo" src="../img/etudiant.png" alt="logo_carnet" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les étudiants</h2>
           </a>
