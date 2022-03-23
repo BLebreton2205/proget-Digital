@@ -164,7 +164,7 @@ let io_server = socket_io(serveur);
 io_server.on("connection", socket_client => {
     console.log("   --- Un client se connecte en websocket ! ---");
 
-    socket_client.on("StagePlease", token => {
+    socket_client.on("StagePlease", () => {
       var selectQuery = 'SELECT `Id_stage`, `titre`, `nom`, `periode`, `motcle` FROM `stage`, `entreprise` WHERE stage.Id_entreprise=entreprise.Id_entreprise ORDER BY titre';
       pool.getConnection((err, connection) => {
         if(err) throw err
@@ -934,6 +934,10 @@ app.post("/Stage", (req, res) => {
         var stage = req.body[stage];
         tools.sendClientPage(res, "connected/etablissement/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
       }
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin"){
+        var stage = req.body[stage];
+        tools.sendClientPage(res, "connected/admin/Stage", "Stage | DigiStage", true, ["token = '"+cookie+"';", "Id_stage = "+req.body.stage]);
+      }
       else res.redirect("/login");
     }
 }else res.redirect("/login");
@@ -1221,6 +1225,7 @@ app.all("/StageDispo", (req, res) => {
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/StageDispo", "Disponibilité des stages | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/StageDispo", "Liste des stages | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");

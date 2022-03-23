@@ -53,8 +53,8 @@ $(()=>{
           </a>
         </div>
         <div class="col">
-          <a class="text-decoration-none">
-            <img href="/PromoDispo" id="dispo" src="../img/calendar.jpg" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
+          <a class="text-decoration-none" href="/StageDispo">
+            <img href="/StageDispo" id="dispo" src="../img/calendar.jpg" alt="logo_calendar" width="150" height="150" class="mx-auto d-block">
             <h2 id= "dispo" class="text-center" style= "color : black">Les stages</h2>
           </a>
         </div>
