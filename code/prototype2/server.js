@@ -165,7 +165,7 @@ io_server.on("connection", socket_client => {
     console.log("   --- Un client se connecte en websocket ! ---");
 
     socket_client.on("StagePlease", token => {
-      var selectQuery = 'SELECT `Id_stage`, `titre`, `nom`, `periode`, `motcle` FROM `stage`, `entreprise` WHERE stage.Id_entreprise=entreprise.Id_entreprise';
+      var selectQuery = 'SELECT `Id_stage`, `titre`, `nom`, `periode`, `motcle` FROM `stage`, `entreprise` WHERE stage.Id_entreprise=entreprise.Id_entreprise ORDER BY titre';
       pool.getConnection((err, connection) => {
         if(err) throw err
         console.log(`Connecté à l'id ${connection.threadId}`)
@@ -192,7 +192,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("CursusPlease", () => {
       console.log('Hey oh !')
-      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole';
+      var selectQuery = 'SELECT `Id_cursus`, `titre`, `nom`, `periode` FROM `cursus`, `etablissement` WHERE cursus.ID_ecole=etablissement.ID_ecole ORDER BY titre';
       pool.getConnection((err, connection) => {
         if(err) throw err
         console.log(`Connecté à l'id ${connection.threadId}`)
@@ -275,7 +275,7 @@ io_server.on("connection", socket_client => {
     })
 
     socket_client.on("EntreprisesPlease", (Id_cursus) => {
-      var selectQuery = 'SELECT `Id_entreprise`, nom FROM `entreprise` WHERE 1';
+      var selectQuery = 'SELECT `Id_entreprise`, nom FROM `entreprise` WHERE 1 ORDER BY nom';
         console.log(selectQuery)
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -300,31 +300,31 @@ io_server.on("connection", socket_client => {
         })
     })
 
-      socket_client.on("EtablissementsPlease", (Id_cursus) => {
-        var selectQuery = 'SELECT `Id_ecole`, nom FROM `etablissement` WHERE 1';
-          console.log(selectQuery)
-          pool.getConnection((err, connection) => {
-            if(err) throw err
-            console.log(`Connecté à l'id ${connection.threadId}`)
-            connection.query(selectQuery, (err, rows) => {
-              console.log(err)
-                connection.release();
-                let Etablissements = {};
-                let nb = 0;
-                for( let etablissement in rows ){
-                  nb++
-                  Etablissements["etablissement"+nb] = {
-                    'Id_ecole' : rows[nb-1].Id_ecole,
-                    'nom': rows[nb-1].nom
-                  };
-                }
-                console.log(Etablissements)
-                if(!err){
-                  io_server.emit("LesEtablissements", Etablissements)
-                }
-            })
+    socket_client.on("EtablissementsPlease", (Id_cursus) => {
+      var selectQuery = 'SELECT `Id_ecole`, nom FROM `etablissement` WHERE 1 ORDER BY nom';
+        console.log(selectQuery)
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+          connection.query(selectQuery, (err, rows) => {
+            console.log(err)
+              connection.release();
+              let Etablissements = {};
+              let nb = 0;
+              for( let etablissement in rows ){
+                nb++
+                Etablissements["etablissement"+nb] = {
+                  'Id_ecole' : rows[nb-1].Id_ecole,
+                  'nom': rows[nb-1].nom
+                };
+              }
+              console.log(Etablissements)
+              if(!err){
+                io_server.emit("LesEtablissements", Etablissements)
+              }
           })
-      })
+        })
+    })
 
     socket_client.on("MesStages", token => {
       let find = null; //contiendra le descripteur trouve
@@ -947,8 +947,10 @@ app.post("/Cursus", (req, res) => {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise"){
         tools.sendClientPage(res, "connected/entreprise/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
       } else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement"){
-        console.log(req.body)
         tools.sendClientPage(res, "connected/etablissement/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
+      }
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin"){
+        tools.sendClientPage(res, "connected/admin/Cursus", "Cursus | DigiStage", true, ["token = '"+cookie+"';", "Id_cursus = "+req.body.cursus]);
       }
       else res.redirect("/login");
     }
@@ -1230,6 +1232,7 @@ app.all("/PromoDispo", (req, res) => {
   if (req.cookies){
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/PromoDispo", "Disponibilité des cursus | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/PromoDispo", "Liste des cursus | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");

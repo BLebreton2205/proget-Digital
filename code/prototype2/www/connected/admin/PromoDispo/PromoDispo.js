@@ -1,8 +1,9 @@
 var io_client = io();
 
-io_client.emit("EtudiantsPlease");
+io_client.emit("CursusPlease");
 
-let Etudiants = {};
+let Cursus = {};
+
 
 $(() => {
 
@@ -19,46 +20,48 @@ $(() => {
       </div>
     </nav>
 
-    <h1 class="text-center">Les étudiants du site</h1>
+    <h1 class="text-center">Les périodes de stages des Cursus</h1>
 
     <br/>
     `);
-    affichageDesEtudiants(body);
+    affichageDesCursus(body);
 })
-function affichageDesEtudiants(body) {
-  io_client.on("LesEtudiants", etudiant => {
-    Etudiants = etudiant;
+function affichageDesCursus(body) {
+  io_client.on("LesCursus", cursus => {
+    console.log(cursus)
+    Cursus = cursus;
 
     let cardGroup = `
       <div class="container">
         <div class="row">
     `
-    for(etudiant in Etudiants) {
-      let card = newCardEtudiant(Etudiants[etudiant]);
+    for(cur in Cursus) {
+      let card = newCardCursus(Cursus[cur]);
 
       cardGroup = cardGroup+card;
     }
 
     cardGroup = cardGroup+"</div></div>";
 
+    console.log(cardGroup);
 
     body.append(cardGroup);
   })
 }
-function newCardEtudiant(etudiant) {
+function newCardCursus(cursus) {
   let card_html = `
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
     <div class="card" style="margin:2%">
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
-        <h5 class="card-title text-center">${etudiant.nom} ${etudiant.prenom}</h5>
-        <p class="card-text"> <span><i class="bi bi-book" style="font-size: 1.5rem; color: black;"></i></span> ${etudiant.cursus}</p>
-        <p class="card-text"> <span><i class="bi bi-hospital" style="font-size: 1.5rem; color: black;"></i></span> ${etudiant.etablissement}</p>
+        <h5 class="card-title text-center">${cursus.titre}</h5>
+        <p class="card-text"><span><i class="bi bi-hospital" style="font-size: 1.5rem; color: black;"></i></span> ${cursus.etablissement}</p>
+        <p class="card-text"><span><i class="bi bi-calendar-date" style="font-size: 1.5rem; ccolor: black;"></i></span> ${cursus.periode}</p>
       </div>
       <div class="card-footer">
 
-      <form method="post" action="/Compte">
-        <input name="etudiant" type="hidden" value="${etudiant.Id_etudiant}"/>
+      <form method="post" action="/Cursus">
+        <input name="cursus" type="hidden" value="${cursus.Id_cursus}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>
       </div>

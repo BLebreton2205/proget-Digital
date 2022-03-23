@@ -51,7 +51,7 @@ function newCardEtablissement(etablissement) {
     <div class="card" style="margin:2%">
       <img class="card-img-top" src="../img/téléchargement.svg" alt="Card image cap">
       <div class="card-body">
-        <h5 class="card-title text-center">${etablissement.nom}</h5>
+        <h5 class="card-title text-center"> ${etablissement.nom}</h5>
       </div>
       <div class="card-footer">
 
