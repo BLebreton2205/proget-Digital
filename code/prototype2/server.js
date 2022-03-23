@@ -8,11 +8,13 @@ let CLIENT_BEGIN = `
         <link rel="stylesheet" href="../css/style.css"></link>
         <link href="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+        <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
 
         <script src="../jquery-3.6.0.slim.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@3.1.0/js/froala_editor.pkgd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="../script/tagin.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.0/js/bootstrap4-toggle.min.js"></script>
 `
 let CLIENT_END = `
     </head>
@@ -306,20 +308,51 @@ io_server.on("connection", socket_client => {
           console.log(`Connecté à l'id ${connection.threadId}`)
           connection.query(selectQuery, (err, rows) => {
             console.log(err)
-              connection.release();
-              let Entreprises = {};
-              let nb = 0;
-              for( let entreprise in rows ){
-                nb++
-                Entreprises["entreprise"+nb] = {
-                  'Id_entreprise' : rows[nb-1].Id_entreprise,
-                  'nom': rows[nb-1].nom
-                };
-              }
-              console.log(Entreprises)
-              if(!err){
-                io_server.emit("LesEntreprises", Entreprises)
-              }
+            let Result = [];
+            connection.release();
+            let Entreprises = {};
+            let nb = 0;
+            for( let entreprise in rows ){
+              nb++
+              Entreprises["entreprise"+nb] = {
+                'Id_entreprise' : rows[nb-1].Id_entreprise,
+                'nom': rows[nb-1].nom
+              };
+            }
+            Result.push(Entreprises)
+            console.log(Result)
+            if(!err){
+              selectQuery = 'SELECT Id_demande, nom FROM demandecompte WHERE typeEntreprise = 1 ORDER BY nom';
+              console.log(selectQuery)
+              pool.getConnection((err, connection) => {
+                if(err) throw err
+                console.log(`Connecté à l'id ${connection.threadId}`)
+                connection.query(selectQuery, (err, rows) => {
+                  connection.release();
+                  if(rows){
+                    let Demandes = {};
+                    let nb = 0;
+                    for( let demande in rows ){
+                      nb++
+                      Demandes["demande"+nb] = {
+                        'Id_demande' : rows[nb-1].Id_demande,
+                        'nom': rows[nb-1].nom
+                      };
+                    }
+                    Result.push(Demandes)
+                    console.log(Result)
+                    io_server.emit("LesEntreprises", Result)
+                    console.log("Entreprise+Demande")
+                  }else {
+                    io_server.emit("LesEntreprises", Result)
+                    console.log("Entreprise")
+                  }
+                })
+
+              })
+              io_server.emit("LesEntreprises", Entreprises)
+            }
+
           })
         })
     })
