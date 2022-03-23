@@ -23,23 +23,49 @@ let CLIENT_END = `
 
 /*  Importation des différents packages NodeJS  */
 /*region*/
-const express = require('express');
-const url = require('url');
-const mysql = require('mysql');
-const http = require("http");
-const cookieParser = require('cookie-parser');
-const app = express();
-const serveur = http.Server(app);
-const port = process.env.PORT || 2205; //Définition du port du serveur
-const nodemailer = require('nodemailer');
-const multer = require('multer');
-const path = require('path');
-const bodyParser = require('body-parser');
-let fs = require("fs");
-const { argv } = require("process");
+const express       = require('express');
+//const sessions      = require("express-session");
+//const redis         = require('redis');
+//const redisStore    = require('connect-redis')(sessions);
+const url           = require('url');
+const mysql         = require('mysql');
+const http          = require("http");
+const cookieParser  = require('cookie-parser');
+const app           = express();
+const serveur       = http.Server(app);
+const port          = process.env.PORT || 2205; //Définition du port du serveur
+const nodemailer    = require('nodemailer');
+const multer        = require('multer');
+const path          = require('path');
+const bodyParser    = require('body-parser');
+let fs              = require("fs");
+const { argv }      = require("process");
+/*var async           =     require("async");
+const { createClient } = require("redis");*/
+
+/* Création de la session type */
+/*const oneDay = 1000 * 60 * 60 *24; //La durée de vie de nos sessions
+app.use(sessions({
+  secret:"le61aFPq1LwUHNgmOD4xcU0tLX9OtJqMaOxLiX679jXXeyGGahSm",
+  //Création du store des sessions
+  store: new redisStore({ host: 'localhost', port: 2205, client: client , ttl : 260}),
+  saveUninitialized: true,
+  cookie: { maxAge: oneDay },
+  resave: false
+}))
+app.use(function (req, res, next) {
+  if (!req.session) {
+    return next(new Error("oh no")) // handle error
+  }
+  next() // otherwise continue
+})*/
+
 app.use(bodyParser.urlencoded({ extend:false }));
 app.use(bodyParser.json());
 /*endregion*/
+
+
+//var session;
 
 /*Création du stockages des fichiers temporaire */
 const tempStorage = multer.diskStorage({
@@ -655,7 +681,6 @@ app.all(["/login"], (req, res) => {
 
 app.all("/Connect", (req, res) => {
   console.log("\n========== Tentative de connexion ==========");
-
   let userData = {
     type: '',
     id: '',
@@ -667,7 +692,7 @@ app.all("/Connect", (req, res) => {
   userData.type = req.body['type'];
 
   var selectQuery = `SELECT * FROM ${userData.type} WHERE mail = '${userData.mail}'`;
-  //console.log(selectQuery)
+  console.log(selectQuery)
 
   pool.getConnection((err, connection) => {
   if(err) throw err
@@ -687,13 +712,20 @@ app.all("/Connect", (req, res) => {
               userData.id = Result['Id_etudiant'];
               name_cookie = "etudiant-"+Math.floor(Math.random() * 1000);
               i = 0;
-              //console.log("userData")
               while (i < waiting_user.length){
                 if (waiting_user[i] == name_cookie){
                   name_cookie = "etudiant-"+Math.floor(Math.random() * 1000);
                   i = 0;
                 }
               }
+              console.log(userData)
+
+              /*var session = req.session;
+              session.name_session = name_session;
+              session.userid = userData.id;
+              session.type = userData.type;
+              session.mail = userData.mail;
+              console.log(req.session.views)*/
 
               res.cookie(name_cookie, userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser(name_cookie, userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
@@ -710,11 +742,11 @@ app.all("/Connect", (req, res) => {
                   i = 0;
                 }
               }
+              console.log(userData)
               res.cookie(name_cookie, userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser(name_cookie, userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
               break
-
             case "etablissement":
               console.log("         Send Page - Etablissement");
               userData.id = Result['Id_ecole'];
@@ -726,6 +758,7 @@ app.all("/Connect", (req, res) => {
                   i = 0;
                 }
               }
+              console.log(userData)
               res.cookie(name_cookie, userData, {maxAge: 24 * 60 * 60 * 1000});
               tools.addUser(name_cookie, userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
               res.redirect("/interface");
@@ -744,16 +777,46 @@ app.all("/Connect", (req, res) => {
           }))
         }
       }else{
-        console.log("   Mauvaise addresse mail");
-        res.redirect(url.format({
-          pathname:'/login',
-          query: {
-            "error":"mail",
-            "mail":encodeURI(req.body.email),
-            "mdp":encodeURI(req.body.mdp),
-            "type":encodeURI(req.body.type)
+        selectQuery = `SELECT * FROM administrateur WHERE mail = '${userData.mail}'`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+        if(err) throw err
+        console.log(`Connecté à l'id ${connection.threadId}`)
+        let name_cookie, i;
+
+        connection.query(selectQuery, (err, rows) => {
+          var Result = rows[0];
+          connection.release()
+          if(Result) {
+            console.log("         Send Page - Administrateur");
+            userData.id = Result['Id_admin'];
+            userData.type = "admin";
+            name_cookie = "admin-"+Math.floor(Math.random() * 1000);
+            i = 0;
+            while (i < waiting_user.length){
+              if (waiting_user[i] == name_cookie){
+                name_cookie = "admin-"+Math.floor(Math.random() * 1000);
+                i = 0;
+              }
+            }
+            res.cookie(name_cookie, userData, {maxAge: 24 * 60 * 60 * 1000});
+            tools.addUser(name_cookie, userData); // on notifie l'ajout de l'utilisateur au noyeau du serveur
+            console.log(userData);
+            res.redirect("/interface");
+          } else {
+            console.log("   Mauvaise addresse mail");
+            res.redirect(url.format({
+              pathname:'/login',
+              query: {
+                "error":"mail",
+                "mail":encodeURI(req.body.email),
+                "mdp":encodeURI(req.body.mdp),
+                "type":encodeURI(req.body.type)
+              }
+            }))
           }
-        }))
+          });
+        })
       };
     });
   })
@@ -768,6 +831,7 @@ app.all("/interface", (req, res) => {
       if(req.cookies[cookie] && req.cookies[cookie].type == "etudiants") tools.sendClientPage(res, "connected/etudiant/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "entreprise") tools.sendClientPage(res, "connected/entreprise/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else if(req.cookies[cookie] && req.cookies[cookie].type == "etablissement") tools.sendClientPage(res, "connected/etablissement/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
+      else if(req.cookies[cookie] && req.cookies[cookie].type == "admin") tools.sendClientPage(res, "connected/admin/Interface", "Interface | DigiStage", true, ["token = '"+cookie+"';"]);
       else res.redirect("/login");
     }
   }else res.redirect("/login");
