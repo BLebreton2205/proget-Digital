@@ -300,6 +300,86 @@ io_server.on("connection", socket_client => {
       }
     })
 
+    socket_client.on("Entreprises_Etablissements_Please", (type) => {
+      var selectQuery
+
+      if(type == "entreprise") selectQuery = 'SELECT `Id_entreprise`, nom FROM `entreprise` WHERE 1 ORDER BY nom';
+      else selectQuery = 'SELECT `Id_ecole`, nom FROM `etablissement` WHERE 1 ORDER BY nom';
+
+        console.log(selectQuery)
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+          connection.query(selectQuery, (err, rows) => {
+            console.log(err)
+            connection.release();
+            let Result = [];
+            let nb = 0;
+            let Entreprises = {};
+            let Etablissements = {};
+            if(type == "entreprise"){
+              for( let col in rows ){
+                nb++
+                Entreprises[type+nb] = {
+                  'Id_entreprise' : rows[nb-1].Id_entreprise,
+                  'nom': rows[nb-1].nom
+                };
+              }
+              Result.push(Entreprises)
+            }else{
+              for( let col in rows ){
+                nb++
+                Etablissements["etablissement"+nb] = {
+                  'Id_ecole' : rows[nb-1].Id_ecole,
+                  'nom': rows[nb-1].nom
+                };
+              }
+              Result.push(Etablissements)
+            }
+
+            console.log(Entreprises)
+            console.log(Etablissements)
+            if(!err){
+              if(type == "entreprise") selectQuery = 'SELECT Id_demande, nom FROM demandecompte WHERE typeEntreprise = 1 ORDER BY nom';
+              else selectQuery = selectQuery = 'SELECT Id_demande, nom FROM demandecompte WHERE typeEtablissement = 1 ORDER BY nom';
+              console.log(selectQuery)
+
+              pool.getConnection((err, connection) => {
+                if(err) throw err
+                console.log(`Connecté à l'id ${connection.threadId}`)
+                connection.query(selectQuery, (err, rows) => {
+                  connection.release();
+                  if(!(Object.keys(rows).length === 0)){
+                    let Demandes = {};
+                    let nb = 0;
+                    for( let demande in rows ){
+                      nb++
+                      Demandes["demande"+nb] = {
+                        'Id_demande' : rows[nb-1].Id_demande,
+                        'nom': rows[nb-1].nom
+                      };
+                    }
+                    //console.log(Result)
+                    Result.push(Demandes)
+                    console.log(Result)
+                    if(type == "entreprise") io_server.emit("LesEntreprises", Result)
+                    else io_server.emit("LesEtablissements", Result)
+                      console.log("Ouh")
+                  }else {
+
+                    if(type == "entreprise") io_server.emit("LesEntreprises", Entreprises)
+                    else io_server.emit("LesEtablissements", Etablissements)
+                      console.log("gaga")
+                  }
+                })
+
+              })
+            }
+
+          })
+        })
+    })
+
     socket_client.on("EntreprisesPlease", (Id_cursus) => {
       var selectQuery = 'SELECT `Id_entreprise`, nom FROM `entreprise` WHERE 1 ORDER BY nom';
         console.log(selectQuery)
@@ -642,6 +722,38 @@ io_server.on("connection", socket_client => {
       }
     })
 
+    socket_client.on("InfoDemandePlease", (demande) => {
+      if(demande){ //on a bien trouver une corrspondance
+        var selectQuery = `SELECT nom, mail FROM demandecompte WHERE Id_demande = ${demande}`;
+        console.log(selectQuery);
+        pool.getConnection((err, connection) => {
+          if(err) throw err
+          console.log(`Connecté à l'id ${connection.threadId}`)
+
+          connection.query(selectQuery, (err, rows) => {
+            if(!(Object.keys(rows).length === 0)){
+              var Result = {
+                'nom': rows[0].nom,
+                'mail': rows[0].mail
+              };
+
+              connection.release()    // return the connection to pool
+              if(!err){
+              //  console.log(Result)
+                io_server.emit("Demande", Result)
+              } else {
+                  console.log(err+"1")
+              }
+            }
+          })
+        });
+      }else{
+        console.log("... erreur de token sur une nouvelle connexion websocket...");
+        socket_client.emit("bad_socket");
+        //on ignore ce client
+      }
+    })
+
     socket_client.on("InfoPlease", (token) => {
       //console.log(waiting_user)
       let find = null; //contiendra le descripteur trouve
@@ -821,30 +933,31 @@ app.all("/login", (req, res) => {
 app.all("/signup", (req, res) => {
   console.log("\n========== Signup ==========");
   console.log(req.body)
-  switch (req.body.type) {
-    case "entreprise":
+  /*switch (req.body.type) {
+    case "entreprise":*/
       tools.sendClientPage(res, "public/NewCompteEntreprise", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
-      break;
+    /* break;
     case "etablissement":
       tools.sendClientPage(res, "public/NewCompteEtablissement", "Créer un compte | DigiStage");
       break;
-  }
+  }*/
 })
 
 app.all("/signup/NewDemande", (req, res) => {
   console.log("\n========== Nouvelle demande ==========");
   console.log(req.body)
   console.log(`Nouvelle demande ${req.body.type}`);
-  selectQuery = `INSERT INTO demandecompte (type, nom, mail, mdp) VALUES ("${req.body.type}", "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
+
+  if(req.body.type == "entreprise") selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, mail, mdp) VALUES (1, 0, "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
+  else selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, mail, mdp) VALUES (0, 1, "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
+
   console.log(selectQuery)
   pool.getConnection((err, connection) => {
     if(err) throw err
     console.log(`Connecté à l'id ${connection.threadId}`)
 
     connection.query(selectQuery, (err, rows) => {
-      var Result = rows[0];
       connection.release()
-      console.log(Result)
       res.redirect("/login")
     })
   });
@@ -1492,6 +1605,91 @@ app.all("/Compte", (req, res) => {
       }
       else res.redirect("/login");
     }
+  }else res.redirect("/login");
+})
+
+app.all("/NewCompte", (req, res) => {
+  console.log("\n========== New Compte ==========")
+  if (req.cookies){
+    for(cookie in req.cookies) {
+      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
+        if(req.body.demande){
+          tools.sendClientPage(res, "connected/admin/NewCompte", "Demande de nouveau compte | DigiStage", true, ["token = '"+cookie+"';", "Id_demande = "+req.body.demande]);
+        }
+      }
+      else res.redirect("/login");
+    }
+  }else res.redirect("/login");
+})
+
+app.all("/NewCompte/Valid", (req, res) => {
+  console.log("\n========== New Compte validé ==========")
+  if(req.body.id){
+    console.log(req.body)
+    let NewCompte = {};
+    let type;
+
+    var selectQuery = `SELECT typeEntreprise, typeEtablissement, nom, mail, mdp FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
+    console.log(selectQuery)
+
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+
+      connection.query(selectQuery, (err, rows) => {
+        connection.release();
+            console.log("hey")
+        console.log(rows)
+        for(let col in rows[0]){
+          switch (col) {
+            case 'typeEntreprise':
+              if(rows[0][col]) type = "entreprise"
+              break
+            case 'typeEtablissement':
+              if(rows[0][col]) type = "etablissement"
+              break
+            default:
+              NewCompte[col] = rows[0][col]
+              break
+          }
+
+        }
+        if(!err){
+          console.log("ho")
+          console.log(NewCompte)
+
+          if(type == "entreprise") selectQuery = `INSERT INTO ${type}( nom, mail, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.mail}', '${NewCompte.mdp}' )`;
+          else selectQuery = `INSERT INTO ${type}( nom, mail, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.mail}', '${NewCompte.mdp}' )`;
+          console.log(selectQuery)
+
+          pool.getConnection((err, connection) => {
+            if(err) throw err
+            console.log(`Connecté à l'id ${connection.threadId}`)
+
+            connection.query(selectQuery, (err, rows) => {
+              connection.release();
+              if(!err){
+                selectQuery = `DELETE FROM demandecompte WHERE Id_demande=${req.body.id}`;
+                console.log(selectQuery)
+
+                pool.getConnection((err, connection) => {
+                  if(err) throw err
+                  console.log(`Connecté à l'id ${connection.threadId}`)
+
+                  connection.query(selectQuery, (err, rows) => {
+                    connection.release();
+                    if(!err) {
+                      if(type == "entreprise") res.redirect("/ListeEntreprise")
+                      else res.redirect("/ListeEtablissement")
+                    }
+                  })
+                })
+              }
+            })
+          })
+        }
+      })
+    })
   }else res.redirect("/login");
 })
 

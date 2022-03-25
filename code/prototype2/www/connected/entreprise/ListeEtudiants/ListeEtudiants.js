@@ -36,7 +36,7 @@ function affichageDesCursus(body) {
     Etudiants = etudiant;
 
     let cardGroup = `
-      <div class="container"  style="border: solid black 1px">
+      <div class="container" >
         <div class="row">
     `
     for(etudiant in Etudiants) {

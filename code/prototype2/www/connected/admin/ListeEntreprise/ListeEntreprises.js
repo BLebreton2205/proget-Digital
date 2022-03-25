@@ -1,6 +1,6 @@
 var io_client = io();
 
-io_client.emit("EntreprisesPlease");
+io_client.emit("Entreprises_Etablissements_Please", "entreprise");
 
 let msg_receive = false;
 let Entreprises;
@@ -34,6 +34,7 @@ $(() => {
       <br/>
     `);
   affichageDesEntreprises(body);
+
   $(function(){
     $('#test').change(function() {
       if(document.getElementById('test').checked) {
@@ -42,7 +43,6 @@ $(() => {
         }
       } else {
         if(msg_receive){
-          console.log(msg_receive)
           $(`#AllCard`).remove();
           affichageDesEntreprises(body);
         }
@@ -55,58 +55,98 @@ $(() => {
 function affichageDesEntreprises(body) {
   if(msg_receive){
       console.log("Ho")
-      let cardGroup = `
-        <div id="AllCard" class="container" style="border: solid black 1px">
-          <div class="row">
-      `
-      for(entreprise in Entreprises) {
-        let card = newCardEntreprise(entreprise);
+      if(Demandes){
 
-        cardGroup = cardGroup+card;
-      }
-
-      for(demande in Demandes) {
-        let card = newCardDemande(demande);
-
-        cardGroup = cardGroup+card;
-      }
-
-      cardGroup = cardGroup+"<br/></div></div></div>";
-
-
-      body.append(cardGroup);
-  } else {
-    msg_receive = true;
-    console.log("Hey")
-    io_client.on("LesEntreprises", result => {
-      Entreprises = result[0];
-      if(Entreprises){
-        console.log(Entreprises)
-        Demandes = result[1];
-
-        let t = `
-          <div id="AllCard" class="container" style="border: solid black 1px">
+        let cardGroup = `
+          <div id="AllCard" class="container">
             <div class="row">
         `
-        console.log(t)
+        for(demande in Demandes) {
+          let card = newCardDemande(demande);
+
+          cardGroup = cardGroup+card;
+        }
+
+        cardGroup = cardGroup+"</div><br/><hr/><br/><div class='row'>";
+
         for(entreprise in Entreprises) {
           let card = newCardEntreprise(entreprise);
 
-          t += card;
+          cardGroup = cardGroup+card;
         }
+
+        cardGroup = cardGroup+"<br/><!--</div>--></div></div>";
+
+
+        body.append(cardGroup);
+      } else {
+
+        let cardGroup = `
+          <div id="AllCard" class="container">
+            <div class="row">
+        `
+
+        for(entreprise in Entreprises) {
+          let card = newCardEntreprise(entreprise);
+
+          cardGroup = cardGroup+card;
+        }
+
+        cardGroup = cardGroup+"<br/><!--</div>--></div></div>";
+
+
+        body.append(cardGroup);
+      }
+  } else {
+    msg_receive = true;
+    console.log("Hey")
+
+    io_client.on("LesEntreprises", result => {
+      if(result.length >1){
+        Entreprises = result[0];
+        Demandes = result[1];
+
+        let cardGroup = `
+          <div id="AllCard" class="container">
+            <div class="row">
+        `
 
         for(demande in Demandes) {
           let card = newCardDemande(demande);
 
-          t += card;
+          cardGroup += card;
         }
 
-        t += "<br/></div></div></div>";
+        cardGroup += "</div><br/><hr/><br/><div class='row'>";
 
+        for(entreprise in Entreprises) {
 
-        body.append(t);
+          //console.log(entreprise)
+          let card = newCardEntreprise(entreprise);
+
+          cardGroup = cardGroup+card;
+        }
+
+        cardGroup += "<br/><!--</div>--></div></div>";
+
+        body.append(cardGroup);
+      }else{
+        Entreprises = result
+        let cardGroup = `
+          <div id="AllCard" class="container">
+            <div class="row">
+        `
+        for(entreprise in Entreprises) {
+          let card = newCardEntreprise(entreprise);
+
+          cardGroup = cardGroup+card;
+        }
+
+        cardGroup += "<br/><!--</div>--></div></div>";
+
+        body.append(cardGroup);
+        //console.log(cardGroup)
       }
-
     })
   }
 }
@@ -142,7 +182,7 @@ function newCardDemande(demande) {
       </div>
       <div class="card-footer">
 
-      <form method="post" action="/Compte">
+      <form method="post" action="/NewCompte">
         <input name="demande" type="hidden" value="${Demandes[demande].Id_demande}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>

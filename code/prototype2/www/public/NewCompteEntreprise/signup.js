@@ -16,7 +16,7 @@ $(() => {
       <div class = "container">
         <!--        Titre       -->
         <div class="text-center">
-          <h1>Création d'un compte entreprise</h1>
+          <h1>Création d'un compte ${type}</h1>
         </div>
 
         <form id="form_info" method="post" action="/signup/NewDemande">
