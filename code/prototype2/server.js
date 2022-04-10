@@ -15,6 +15,7 @@ let CLIENT_BEGIN = `
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="../script/tagin.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.0/js/bootstrap4-toggle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.js" data-turbolinks-track="true"></script>
 `
 let CLIENT_END = `
     </head>
@@ -336,9 +337,6 @@ io_server.on("connection", socket_client => {
               }
               Result.push(Etablissements)
             }
-
-            console.log(Entreprises)
-            console.log(Etablissements)
             if(!err){
               if(type == "entreprise") selectQuery = 'SELECT Id_demande, nom FROM demandecompte WHERE typeEntreprise = 1 ORDER BY nom';
               else selectQuery = selectQuery = 'SELECT Id_demande, nom FROM demandecompte WHERE typeEtablissement = 1 ORDER BY nom';
@@ -362,14 +360,23 @@ io_server.on("connection", socket_client => {
                     //console.log(Result)
                     Result.push(Demandes)
                     console.log(Result)
-                    if(type == "entreprise") io_server.emit("LesEntreprises", Result)
-                    else io_server.emit("LesEtablissements", Result)
-                      console.log("Ouh")
+                    if(type == "entreprise"){
+                      io_server.emit("LesEntreprises", Result);
+                      console.log(Result)
+                    } else {
+                      io_server.emit("LesEtablissements", Result);
+                      console.log(Result)
+                    }
                   }else {
 
-                    if(type == "entreprise") io_server.emit("LesEntreprises", Entreprises)
-                    else io_server.emit("LesEtablissements", Etablissements)
-                      console.log("gaga")
+                    if(type == "entreprise"){
+                      io_server.emit("LesEntreprises", Entreprises)
+                      console.log(Entreprises)
+                    } else{
+                      io_server.emit("LesEtablissements", Etablissements)
+                      console.log(Etablissements)
+                    }
+                    console.log("gaga")
                   }
                 })
 
@@ -925,7 +932,6 @@ app.all("/login", (req, res) => {
     res.clearCookie(cookie);
   }
   let arg_get = URItoArg(req.url);
-  //console.log(req.url)
   if(arg_get) tools.sendClientPage(res, "public/login", "Se connecter | DigiStage", false, null, arg_get);
   else tools.sendClientPage(res, "public/login", "Se connecter | DigiStage");
 })
@@ -933,14 +939,7 @@ app.all("/login", (req, res) => {
 app.all("/signup", (req, res) => {
   console.log("\n========== Signup ==========");
   console.log(req.body)
-  /*switch (req.body.type) {
-    case "entreprise":*/
-      tools.sendClientPage(res, "public/NewCompteEntreprise", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
-    /* break;
-    case "etablissement":
-      tools.sendClientPage(res, "public/NewCompteEtablissement", "Créer un compte | DigiStage");
-      break;
-  }*/
+  tools.sendClientPage(res, "public/NewCompteEntreprise", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
 })
 
 app.all("/signup/NewDemande", (req, res) => {
@@ -1450,10 +1449,13 @@ app.all("/PromoDispo", (req, res) => {
 
 app.all("/ListeEntreprise", (req, res) => {
   console.log("\n========== Liste des entreprises ==========")
+  let arg_get = URItoArg(req.url);
   if (req.cookies){
-    for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';"]);
-      else res.redirect("/login");
+    for(cookie in req.cookies){
+      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
+        if(arg_get) tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';","type = 'entreprise';"], arg_get);
+        else tools.sendClientPage(res, "connected/admin/ListeEntreprise", "Liste des entreprises | DigiStage", true, ["token = '"+cookie+"';","type = 'entreprise';"]);
+      }else res.redirect("/login");
     }
   }else res.redirect("/login");
 
@@ -1461,10 +1463,13 @@ app.all("/ListeEntreprise", (req, res) => {
 
 app.all("/ListeEtablissement", (req, res) => {
   console.log("\n========== Liste des etablissements ==========")
+  let arg_get = URItoArg(req.url);
   if (req.cookies){
     for(cookie in req.cookies) {
-      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur") tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';"]);
-      else res.redirect("/login");
+      if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
+        if(arg_get) tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';","type = 'etablissement';"], arg_get);
+        else tools.sendClientPage(res, "connected/admin/ListeEtablissement", "Liste des établissements | DigiStage", true, ["token = '"+cookie+"';","type = 'etablissement';"]);
+      }else res.redirect("/login");
     }
   }else res.redirect("/login");
 
@@ -1614,7 +1619,7 @@ app.all("/NewCompte", (req, res) => {
     for(cookie in req.cookies) {
       if(req.cookies[cookie] && req.cookies[cookie].type == "administrateur"){
         if(req.body.demande){
-          tools.sendClientPage(res, "connected/admin/NewCompte", "Demande de nouveau compte | DigiStage", true, ["token = '"+cookie+"';", "Id_demande = "+req.body.demande]);
+          tools.sendClientPage(res, "connected/admin/NewCompte", "Demande de nouveau compte | DigiStage", true, ["token = '"+cookie+"';", "Id_demande = "+req.body.demande+";", "type = '"+req.body.type+"'"]);
         }
       }
       else res.redirect("/login");
@@ -1627,7 +1632,7 @@ app.all("/NewCompte/Valid", (req, res) => {
   if(req.body.id){
     console.log(req.body)
     let NewCompte = {};
-    let type;
+    let type = req.body.type;
 
     var selectQuery = `SELECT typeEntreprise, typeEtablissement, nom, mail, mdp FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
     console.log(selectQuery)
@@ -1643,10 +1648,7 @@ app.all("/NewCompte/Valid", (req, res) => {
         for(let col in rows[0]){
           switch (col) {
             case 'typeEntreprise':
-              if(rows[0][col]) type = "entreprise"
-              break
             case 'typeEtablissement':
-              if(rows[0][col]) type = "etablissement"
               break
             default:
               NewCompte[col] = rows[0][col]
@@ -1687,6 +1689,33 @@ app.all("/NewCompte/Valid", (req, res) => {
               }
             })
           })
+        }
+      })
+    })
+  }else res.redirect("/login");
+})
+
+app.all("/NewCompte/Refus", (req, res) => {
+  console.log("\n========== New Compte refusé ==========")
+  let type = req.body.type;
+  if(req.body.id){
+    console.log(req.body)
+    let NewCompte = {};
+    let type;
+
+    var selectQuery = `DELETE FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
+    console.log(selectQuery)
+
+    pool.getConnection((err, connection) => {
+      if(err) throw err
+      console.log(`Connecté à l'id ${connection.threadId}`)
+
+      connection.query(selectQuery, (err, rows) => {
+        connection.release();
+        console.log("     Compte refusé")
+        if(!err){
+          if(type == "entreprise") res.redirect("/ListeEntreprise")
+          else res.redirect("/ListeEtablissement")
         }
       })
     })

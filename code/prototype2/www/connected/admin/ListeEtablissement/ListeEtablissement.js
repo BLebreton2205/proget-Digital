@@ -26,7 +26,7 @@ $(() => {
 
       <div class="text-center">
         <div class="form-check form-switch form-check-inline" >
-          <input class="form-check-input " id="test" type="checkbox" role="switch" id="flexSwitchCheckDefault" style="transform: scale(1.5);">
+          <input class="form-check-input switch" id="test" type="checkbox" role="switch" id="flexSwitchCheckDefault" style="transform: scale(1.5);">
           <label class="form-check-label" for="flexSwitchCheckDefault"> Afficher ques les demandes</label>
         </div>
       </div>
@@ -99,7 +99,6 @@ function affichageDesEtablissements(body) {
     console.log("Hey")
 
     io_client.on("LesEtablissements", result => {
-    console.log(result)
       if(result.length >1){
         Etablissements = result[0];
         Demandes = result[1];
@@ -128,12 +127,13 @@ function affichageDesEtablissements(body) {
         body.append(cardGroup);
       }else{
         Etablissements = result
+        console.log(Etablissements)
         let cardGroup = `
           <div id="AllCard" class="container">
             <div class="row">
         `
         for(etablissement in Etablissements) {
-          let card = newCardEtablissement(Etablissements[etablissement]);
+          let card = newCardEtablissement(etablissement);
 
           cardGroup = cardGroup+card;
         }
@@ -178,6 +178,7 @@ function newCardDemande(demande) {
       <div class="card-footer">
 
       <form method="post" action="/NewCompte">
+        <input name="type" type="hidden" value="${type}"/>
         <input name="demande" type="hidden" value="${Demandes[demande].Id_demande}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>

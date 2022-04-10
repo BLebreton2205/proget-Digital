@@ -50,6 +50,12 @@ $(() => {
     })
   })
 });
+if(notif_click){
+  console.log("ih")
+  //document.getElementById('test').checked = true
+  $('#test').bootstrapSwitch('toggleState', true, true);
+  console.log($('#test').bootstrapSwitch('state'))
+}
 
 
 function affichageDesEntreprises(body) {
@@ -183,6 +189,7 @@ function newCardDemande(demande) {
       <div class="card-footer">
 
       <form method="post" action="/NewCompte">
+        <input name="type" type="hidden" value="${type}"/>
         <input name="demande" type="hidden" value="${Demandes[demande].Id_demande}"/>
         <button type="submit" class="btn btn-primary">Lire plus</button>
       </form>

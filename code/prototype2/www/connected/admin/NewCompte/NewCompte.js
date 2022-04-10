@@ -28,12 +28,14 @@ $(()=>{
         <div class="row">
           <div class="col text-center">
             <form method="post" action="/NewCompte/Valid">
+              <input name="type" type="hidden" value="${type}"/>
               <input name="id" type="hidden" value=${Id_demande} />
               <button type="submit" class="btn btn-success" id="editStage">Valider</button>
             </form>
           </div>
           <div class="col text-center">
             <form action="/NewCompte/Refus" method="post">
+              <input name="type" type="hidden" value="${type}"/>
               <input name="id" type="hidden" value=${Id_demande} />
               <button type="submit" class="btn btn-danger" id="supprim">Refuser</button>
             </form>
