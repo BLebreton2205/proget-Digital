@@ -22,8 +22,16 @@ $(()=>{
       <h2 class="sous_titre">Infomations personnelles</h2>
         <label id="medium">Nom de l'entreprise:</label>
         <p id='nom'></p>
-          <label id="medium">Mail:</label>
+        <label id="medium">Localisation:</label>
+        <p id="localisation"></p>
+        <label id="medium">SIRET:</label>
+        <p id="siret"></p>
+        <label id="medium">Nom du responsable:</label>
+        <p id="nomResp"></p>
+        <label id="medium">Mail:</label>
         <p id="mail"></p>
+        <label id="medium">Numéro:</label>
+        <p id="numero"></p>
       <br/><hr/><br/>
         <div class="row">
           <div class="col text-center">
@@ -50,6 +58,10 @@ $(()=>{
 function Demande() {
   io_client.on("Demande", demande => {
     document.getElementById("nom").innerHTML = demande.nom;
+    document.getElementById("localisation").innerHTML = demande.localisation;
+    document.getElementById("siret").innerHTML = demande.siret;
+    document.getElementById("nomResp").innerHTML = demande.nomResp;
     document.getElementById("mail").innerHTML = demande.mail;
+    document.getElementById("numero").innerHTML = demande.numero;
   })
 }

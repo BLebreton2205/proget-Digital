@@ -28,8 +28,24 @@ $(() => {
             <input type="text" class="form-control" name="nom" placeholder="Nom de votre entreprise" required>
           </div><br/>
           <div class="form-group">
+            <label for="email" id="medium">Localisation : <FONT color=red>*</FONT></label>
+            <input type="text" class="form-control" name="localisation" placeholder="Localisation" required>
+          </div><br/>
+          <div class="form-group">
+            <label for="text" id="medium">Numéro de SIRET : <FONT color=red>*</FONT></label>
+            <input type="number" class="form-control" name="siret" placeholder="SIRET" required>
+          </div><br/>
+          <div class="form-group">
+            <label for="text" id="medium">Nom du responsable : <FONT color=red>*</FONT></label>
+            <input type="text" class="form-control" name="nomResp" placeholder="Nom de votre responsable" required>
+          </div><br/>
+          <div class="form-group">
             <label for="email" id="medium">Email : <FONT color=red>*</FONT></label>
             <input type="email" class="form-control" name="mail" placeholder="Email" required>
+          </div><br/>
+          <div class="form-group">
+            <label for="email" id="medium">Numéro : <FONT color=red>*</FONT></label>
+            <input type="numero" class="form-control" id="numero" placeholder="Numéro" pattern="[0-9]{10}" required>
           </div><br/>
 
             <br/><hr/><br/>

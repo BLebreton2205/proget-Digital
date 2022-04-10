@@ -708,7 +708,7 @@ io_server.on("connection", socket_client => {
 
     socket_client.on("InfoDemandePlease", (demande) => {
       if(demande){ //on a bien trouver une corrspondance
-        var selectQuery = `SELECT nom, mail FROM demandecompte WHERE Id_demande = ${demande}`;
+        var selectQuery = `SELECT nom, localisation, siret, nomResp, mail, numero FROM demandecompte WHERE Id_demande = ${demande}`;
         console.log(selectQuery);
         pool.getConnection((err, connection) => {
           if(err) throw err
@@ -718,7 +718,11 @@ io_server.on("connection", socket_client => {
             if(!(Object.keys(rows).length === 0)){
               var Result = {
                 'nom': rows[0].nom,
-                'mail': rows[0].mail
+                'localisation': rows[0].localisation,
+                'siret': rows[0].siret,
+                'nomResp': rows[0].nomResp,
+                'mail': rows[0].mail,
+                'numero': rows[0].numero
               };
 
               connection.release()    // return the connection to pool
@@ -916,7 +920,7 @@ app.all("/login", (req, res) => {
 app.all("/signup", (req, res) => {
   console.log("\n========== Signup ==========");
   console.log(req.body)
-  tools.sendClientPage(res, "public/NewCompteEntreprise", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
+  tools.sendClientPage(res, "public/NewCompte", "Créer un compte | DigiStage", false, ["type = '"+req.body.type+"';"]);
 })
 
 app.all("/signup/NewDemande", (req, res) => {
@@ -924,8 +928,8 @@ app.all("/signup/NewDemande", (req, res) => {
   console.log(req.body)
   console.log(`Nouvelle demande ${req.body.type}`);
 
-  if(req.body.type == "entreprise") selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, mail, mdp) VALUES (1, 0, "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
-  else selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, mail, mdp) VALUES (0, 1, "${req.body.nom}", "${req.body.mail}","${req.body.newMdp}")`;
+  if(req.body.type == "entreprise") selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, localisation, SIRET, nomResp, mail, numero, mdp) VALUES (1, 0, "${req.body.nom}", "${req.body.localisation}"," ${req.body.siret}", "${req.body.nomResp}", "${req.body.mail}", "${req.body.numero}", "${req.body.newMdp}")`;
+  else selectQuery = `INSERT INTO demandecompte (typeEntreprise, typeEtablissement, nom, localisation, SIRET, nomResp, mail, numero, mdp) VALUES (0, 1, "${req.body.nom}", "${req.body.localisation}"," ${req.body.siret}", "${req.body.nomResp}", "${req.body.mail}", "${req.body.numero}", "${req.body.newMdp}")`;
 
   console.log(selectQuery)
   pool.getConnection((err, connection) => {
@@ -1612,7 +1616,7 @@ app.all("/NewCompte/Valid", (req, res) => {
     let NewCompte = {};
     let type = req.body.type;
 
-    var selectQuery = `SELECT typeEntreprise, typeEtablissement, nom, mail, mdp FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
+    var selectQuery = `SELECT typeEntreprise, typeEtablissement, nom, localisation, siret, nomResp, mail, numero, mdp FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
     console.log(selectQuery)
 
     pool.getConnection((err, connection) => {
@@ -1638,8 +1642,8 @@ app.all("/NewCompte/Valid", (req, res) => {
           console.log("ho")
           console.log(NewCompte)
 
-          if(type == "entreprise") selectQuery = `INSERT INTO ${type}( nom, mail, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.mail}', '${NewCompte.mdp}' )`;
-          else selectQuery = `INSERT INTO ${type}( nom, mail, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.mail}', '${NewCompte.mdp}' )`;
+          if(type == "entreprise") selectQuery = `INSERT INTO ${type}( nom, localisation, siret, nomResp, mail, numero, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.Localisation}', '${NewCompte.siret}', '${NewCompte.nomResp}', '${NewCompte.mail}', '${NewCompte.numero}', '${NewCompte.mdp}' )`;
+          else selectQuery = `INSERT INTO ${type}( nom, localisation, siret, nomResp, mail, numero, mdp ) VALUES ( '${NewCompte.nom}', '${NewCompte.Localisation}', '${NewCompte.siret}', '${NewCompte.nomResp}', '${NewCompte.mail}', '${NewCompte.numero}', '${NewCompte.mdp}' )`;
           console.log(selectQuery)
 
           pool.getConnection((err, connection) => {
@@ -1679,7 +1683,7 @@ app.all("/NewCompte/Refus", (req, res) => {
   if(req.body.id){
     console.log(req.body)
     let NewCompte = {};
-    let type;
+    let type = req.body.type;
 
     var selectQuery = `DELETE FROM demandecompte WHERE Id_demande = '${req.body.id}'`;
     console.log(selectQuery)

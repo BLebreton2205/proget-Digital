@@ -45,7 +45,7 @@ $(() => {
           </div><br/>
           <div class="form-group">
             <label for="email" id="medium">Numéro : <FONT color=red>*</FONT></label>
-            <input type="tel" class="form-control" id="numero" placeholder="Numéro" pattern="[0-9]{10}" required>
+            <input type="numero" class="form-control" name="numero" placeholder="Numéro" pattern="[0-9]{10}" required>
           </div><br/>
 
             <br/><hr/><br/>
