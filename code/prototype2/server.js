@@ -1375,7 +1375,6 @@ app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
       info = desc.info;
     }
   }
-  console.log(info)
   if(find) {
     var selectQuery;
     console.log(req.body)
@@ -1383,9 +1382,11 @@ app.post('/Postule', tempUpload.single('CoverLetter'), function (req, res) {
     let mailOptions = {
       from: 'baptiste.lebreton@esiroi.re',
       to: '',
+      cc: info.mail,
       subject: '[Digistage] Postulation pour votre stage ',
       attachments : []
     }
+    console.log(mailOptions)
     if(req.file) mailOptions.attachments.push({path: req.file.path})
 
     //Recherche du mail de l'expéditeur
