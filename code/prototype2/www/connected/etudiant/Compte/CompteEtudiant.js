@@ -117,6 +117,9 @@ $(()=>{
           </form>
         </div>
       </div>
+      <div class="text-center">
+        <p class="verySmallText">L'ajout d'un nouveau CV supprimera l'ancien</p>
+      </div>
     </div>
   </div>
 
