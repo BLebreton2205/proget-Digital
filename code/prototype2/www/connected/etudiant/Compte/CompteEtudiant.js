@@ -94,6 +94,7 @@ $(()=>{
     <h2 class="sous_titre">CV</h2>
     <div class="row">
       <p id="medium">Pour postuler, veuillez importer votre CV</p>
+      <p id="name_cv" ></p>
     </div>
       <div class="text-center">
         <form id ="form_cv" method="post" action="/Compte/new_cv" enctype="multipart/form-data">
@@ -270,8 +271,11 @@ $(()=>{
             case "genre":
               document.getElementById("genre_select").value = valeur_info[arg];
             break
-            /*case "cv":
-            console.log(msg[arg]);*/
+            case "cv":
+              if(msg[arg]){
+                document.getElementById('name_cv').innerHTML = "Votre CV actuel : " + valeur_info[arg].slice(valeur_info[arg].indexOf("-")+1);
+              } 
+              break
             case "type":
               break
             default:

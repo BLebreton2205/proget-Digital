@@ -43,33 +43,10 @@ const path          = require('path');
 const bodyParser    = require('body-parser');
 let fs              = require("fs");
 const { argv }      = require("process");
-/*var async           =     require("async");
-const { createClient } = require("redis");*/
-
-/* Création de la session type */
-/*const oneDay = 1000 * 60 * 60 *24; //La durée de vie de nos sessions
-app.use(sessions({
-  secret:"le61aFPq1LwUHNgmOD4xcU0tLX9OtJqMaOxLiX679jXXeyGGahSm",
-  //Création du store des sessions
-  store: new redisStore({ host: 'localhost', port: 2205, client: client , ttl : 260}),
-  saveUninitialized: true,
-  cookie: { maxAge: oneDay },
-  resave: false
-}))
-app.use(function (req, res, next) {
-  if (!req.session) {
-    return next(new Error("oh no")) // handle error
-  }
-  next() // otherwise continue
-})*/
 
 app.use(bodyParser.urlencoded({ extend:false }));
 app.use(bodyParser.json());
 /*endregion*/
-
-
-//var session;
-
 /*Création du stockages des fichiers temporaire */
 const tempStorage = multer.diskStorage({
   destination: (req, file, cb) => {
