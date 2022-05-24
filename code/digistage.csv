@@ -1,5 +1,0 @@
-"ID_CURSUS","Nom","Description","infos"
-"ID_ENTREPRISE","Nom","Email","Description","SiteWeb","Linkedin","Twitter","Facebook","Mdp"
-"ID_ECOLE","Nom","Email","Description","SiteWeb","Linkedin","Twitter","Facebook","Mdp"
-"ID_ETUDIANT","Nom","Prenom","Cursus","Email","Numero","CV","SiteWeb","Linkedin","Twitter","Facebook","Github","GitLab","StackOverflow","mdp"
-"ID_StAGE","Nom","Description","infos"
