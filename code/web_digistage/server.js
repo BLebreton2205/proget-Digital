@@ -27,9 +27,6 @@ let CLIENT_END = `
 /*  Importation des différents packages NodeJS  */
 /*region*/
 const express       = require('express');
-//const sessions      = require("express-session");
-//const redis         = require('redis');
-//const redisStore    = require('connect-redis')(sessions);
 const url           = require('url');
 const mysql         = require('mysql');
 const http          = require("http");
@@ -47,10 +44,11 @@ const { argv }      = require("process");
 app.use(bodyParser.urlencoded({ extend:false }));
 app.use(bodyParser.json());
 /*endregion*/
+
 /*Création du stockages des fichiers temporaire */
 const tempStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/temp/")
+    cb(null, "uploads/temp/") //localisation du dossier où sont stockés les fichiers
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname)
@@ -69,12 +67,12 @@ const PermStorage = multer.diskStorage({
 })
 const permUpload = multer({ storage: PermStorage })
 
-/*  Création du transporteur de mail  */
+/*  Création du transporteur de mail node mailer */
 var transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: 'gmail', //le service mail utilisé
   auth: {
-    user: 'baptiste.lebreton@esiroi.re',
-    pass: 'JeSu1s3mmerd!!'
+    user: 'baptiste.lebreton@esiroi.re', //l'adresse du compte
+    pass: '' //le mot de passe du compte
   }
 });
 
@@ -83,8 +81,8 @@ app.use(cookieParser());
 /*  Configuration de MySQL  */
 const pool = mysql.createPool({ //changer ici les informations afin de se connecter a la base de données
     connectionLimit : 10,
-    host: 'localhost',
-    user: 'root',
+    host: 'localhost', //l'adresse ip de la base de donnée
+    user: 'root', 
     password: 'root',
     database: 'digistage'
 });
@@ -118,7 +116,7 @@ let tools = {
       }
     }
 
-    let all_script_client =  fs.readdirSync("./www/" + dir_script); //console.log(scripts_file);
+    let all_script_client =  fs.readdirSync("./www/" + dir_script);
 
     for (let name of all_script_client) {
       if(name.endsWith('.js')){
@@ -141,9 +139,12 @@ let tools = {
 let socket_io = require("socket.io");
 let io_server = socket_io(serveur);
 
+/* ici sont listé toutes les information qui sont demandé par le client à l'attention du serveur, ce dernier lance la requête SQL demandé par le client*/
+/* continue jusqu'à la ligne*/
+
 io_server.on("connection", socket_client => {
     console.log("   --- Un client se connecte en websocket ! ---");
-
+ 
     socket_client.on("StagePlease", () => {
       var selectQuery = 'SELECT `Id_stage`, `titre`, `nom`, `periode`, `motcle` FROM `stage`, `entreprise` WHERE stage.Id_entreprise=entreprise.Id_entreprise ORDER BY titre';
       pool.getConnection((err, connection) => {
@@ -903,7 +904,7 @@ function URItoArg(url){
   return arg_get
 }
 
-/*  Partie Pages : Prend en compte l'URL pour choisir quel page montrer au client */
+/*  Partie des Pages : Prend en compte l'URL pour choisir quel page montrer au client */
 /*region*/
 app.all("/login", (req, res) => {
   console.log("\n========== Login ==========");
